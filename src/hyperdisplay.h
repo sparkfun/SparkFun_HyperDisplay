@@ -5,6 +5,10 @@ SparkFun Master Display Library
 Created: July 2018
 Modified: July 2018
 
+Authors:
+	Ciara Jekel
+	Owen Lyke
+
 Purpose: This library standardizes interfaces to displays of many types. 
          This header provides the most abstract class called 'display'
          Other categories of display such as E-Ink, TFT, and OLED can 
