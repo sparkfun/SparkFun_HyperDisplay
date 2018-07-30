@@ -30,7 +30,7 @@ class hyperdisplay : public Print{
     // Parameters
         uint16_t xExt, yExt;        // The rectilinear extent of the display in two dimensions
         uint8_t colorDepth;         // The number of bits of color depth for each pixel.
-        void * pScratch;            // A void pointer to a scratch space for maniuplating data
+        color_t pScratch;            // A void pointer to a scratch space for maniuplating data
         int32_t cursorX, cursorY;   // Large signed cursor coordinates allow for off-screen handling
     
     // Methods
