@@ -1,4 +1,4 @@
-#include "display.h"
+#include "hyperdisplay.h"
 
 
 typedef enum{

@@ -1,0 +1,63 @@
+#######################################
+# Syntax Coloring Map
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+WT2003S	KEYWORD1
+
+commandBytes	KEYWORD1
+songName	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+getSongCount	KEYWORD2
+getSongName	KEYWORD2
+playTrackNumber	KEYWORD2
+playFileName	KEYWORD2
+setVolume	KEYWORD2
+getVolume	KEYWORD2
+setEQ	KEYWORD2
+isPlaying	KEYWORD2
+getPlayStatus	KEYWORD2
+pause	KEYWORD2
+playNext	KEYWORD2
+playPrevious	KEYWORD2
+stopPlaying	KEYWORD2
+
+sendCommand	KEYWORD2
+getResponse	KEYWORD2
+getTwoByteResponse	KEYWORD2
+responseAvailable	KEYWORD2
+clearBuffer	KEYWORD2
+
+######################################
+# Constants (LITERAL1)
+#######################################
+
+MP3_NUM_CMD_BYTES	LITERAL1
+MP3_NUM_NAME_BYTES	LITERAL1
+
+MP3_COMMAND_PLAY_INDEX_IN_ROOT	LITERAL1
+MP3_COMMAND_PLAY_FILE_IN_ROOT	LITERAL1
+MP3_COMMAND_PLAY_INDEX_IN_FOLDER	LITERAL1
+MP3_COMMAND_PLAY_FILE_IN_FOLDER	LITERAL1
+MP3_COMMAND_PAUSE	LITERAL1
+MP3_COMMAND_STOP	LITERAL1
+MP3_COMMAND_NEXT	LITERAL1
+MP3_COMMAND_PREVIOUS	LITERAL1
+MP3_COMMAND_SET_VOLUME	LITERAL1
+MP3_COMMAND_SET_EQ_MODE	LITERAL1
+
+MP3_COMMAND_GET_VOLUME	LITERAL1
+MP3_COMMAND_GET_CURRENT_STATE	LITERAL1
+MP3_COMMAND_GET_SONG_COUNT	LITERAL1
+MP3_COMMAND_GET_SONGS_IN_FOLDER_COUNT	LITERAL1
+MP3_COMMAND_GET_FILE_PLAYING	LITERAL1
+MP3_COMMAND_GET_SONG_NAME_PLAYING	LITERAL1
+
+MP3_START_CODE	LITERAL1
+MP3_END_CODE	LITERAL1
