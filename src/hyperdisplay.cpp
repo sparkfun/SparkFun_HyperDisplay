@@ -8,11 +8,6 @@ header file: hyperdisplay.h
 #include "hyperdisplay.h"
 
 
-void hyperdisplay::pixel(uint16_t x0, uint16_t y0, color_t color)
-{
-
-}
-
 void hyperdisplay::xline(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t width)
 {
 

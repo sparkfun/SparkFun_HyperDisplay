@@ -25,10 +25,10 @@ size_t OLED::write(uint8_t)
   return 0;
 }
 
-// void OLED::pixel(uint16_t x0, uint16_t y0, color_t color)
-// {
+void OLED::pixel(uint16_t x0, uint16_t y0, color_t color)
+{
 
-// }
+}
 
 // void OLED::xline(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t width = 1)
 // {

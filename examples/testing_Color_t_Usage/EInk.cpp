@@ -42,10 +42,10 @@ size_t EInk::write(uint8_t)
   return 0; // Do nothing hahahahahaha
 }
 
-// void EInk::pixel(uint16_t x0, uint16_t y0, color_t color)
-// {
+void EInk::pixel(uint16_t x0, uint16_t y0, color_t color)
+{
 
-// }
+}
 
 // void EInk::xline(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t width = 1)
 // {
