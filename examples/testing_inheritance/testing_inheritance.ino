@@ -9,7 +9,7 @@ class SomeDisplay : public hyperdisplay{
 
   // Bare minimum implementation for classes derived from hyperdisplay, if they are to be instantiated
   void pixel(uint16_t x0, uint16_t y0, color_t color);
-  size_t write(uint8_t b);
+  char_info_t * getCharInfo(uint8_t val);
   
   
 };
@@ -27,10 +27,11 @@ void SomeDisplay::pixel(uint16_t x0, uint16_t y0, color_t color)
   // That way you reduce overhead.
 }
 
-size_t SomeDisplay::write(uint8_t b)
+char_info_t * SomeDisplay::getCharInfo(uint8_t val)
 {
-  return 0;
+  return NULL;
 }
+
 
 SomeDisplay myDisp;
 

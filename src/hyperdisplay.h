@@ -22,15 +22,36 @@ Purpose: This library standardizes interfaces to displays of many types.
 #include <Arduino.h>
 
 #define SWAP_COORDS(a, b) uint16_t temp = a; \
-              a = b; \
-              b = temp; \
+              						  a = b; \
+              					   b = temp; \
 
 typedef void * color_t; 
+
+typedef struct window_info{
+	uint16_t xMin;
+	uint16_t xMax;
+	uint16_t yMin;
+	uint16_t yMax;
+	int32_t  cursorX;
+	int32_t  cursorY;
+	uint16_t xReset;
+	uint16_t yReset;
+}wind_info_t;				// Window infomation structure for placing text on the display
+
+typedef struct character_info{
+	color_t * pdata;		// A pointer to the data to write
+	uint32_t dataSize;		// The number of color_t types that pdata points to
+	uint16_t xDim;			// Number of pixels in x dimension for rectilinear characters
+	uint16_t yDim;			// Number of pixels in y dimension for rectilinear characters
+	bool show;				// Whether or not to actually show the character
+	bool causedNewline;		// Whether or not the character triggered a new line
+}char_info_t;				// Character information structure for placing pixels in a window
 
 class hyperdisplay : public Print{
     private:
     protected:
 
+    	// Some protected drawing functions
     	void lineHigh(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color[], uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width);
     	void lineLow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color[], uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width);
     	
@@ -42,11 +63,12 @@ class hyperdisplay : public Print{
 
     public:
     // Parameters
-        uint16_t xExt, yExt;        // The rectilinear extent of the display in two dimensions
-        uint8_t colorDepth;         // The number of bits of color depth for each pixel.
-        color_t * pScratch;         // A pointer to a scratch space for maniuplating data
-        int32_t cursorX, cursorY;   // Large signed cursor coordinates allow for off-screen handling
-    
+        uint16_t xExt, yExt;        	// The rectilinear extent of the display in two dimensions
+        uint8_t colorDepth;         	// The number of bits of color depth for each pixel.
+        color_t * pScratch;         	// A pointer to a scratch space for maniuplating data.
+        wind_info_t * pCurrentWindow;	// A pointer to the active window information structure.
+        char_info_t * pLastCharacter; 	// A pointer to information about the last character written.
+
     // Methods
         // 'primitive' drawing functions
         virtual void pixel(uint16_t x0, uint16_t y0, color_t color) = 0; // Made a pure virtual function so that derived classes are forced to implement the pixel function
@@ -61,9 +83,9 @@ class hyperdisplay : public Print{
         void circle(uint16_t x0, uint16_t y0, uint16_t radius, color_t color, bool filled = false);
         void fillScreen(color_t color);
     
-        // // Printing
-        // virtual size_t write(uint8_t); // This is the implementation of write that is inherited from, left as virtual to be implementation specific
-
+        // Printing
+        virtual size_t write(uint8_t val); 						// This is the implementation of write that is inherited from, left as virtual to be implementation specific
+        virtual char_info_t * getCharInfo(uint8_t val) = 0;		// A pure virtual function - you must implement this to be able to instantiate an object
 };
 
 
@@ -74,9 +96,9 @@ class hyperdisplay : public Print{
 // and that if the user provides implementation specific versions of the other primitive functions then these callbacks will not be
 // called, so if the functionality is desired it can be re-implemented.
 void hyperdisplayXLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width)  	__attribute__ ((weak));
-void hyperdisplayYLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width) 		__attribute__ ((weak));
-void hyperdisplayRectangleCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, bool filled) 						__attribute__ ((weak));
-void hyperdisplayFillFromArrayCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t size, color_t data[]) 				__attribute__ ((weak));
+void hyperdisplayYLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width) 	__attribute__ ((weak));
+void hyperdisplayRectangleCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, bool filled) 												__attribute__ ((weak));
+void hyperdisplayFillFromArrayCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t size, color_t data[]) 										__attribute__ ((weak));
 
 #endif /* HYPERDISPLAY_H */
 

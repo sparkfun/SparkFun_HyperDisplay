@@ -106,6 +106,60 @@ void hyperdisplay::fillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t
 
 
 
+// FYI this virtual function can be overwritten. It is just the most basic default version
+size_t hyperdisplay::write(uint8_t val)
+{
+	size_t numWritten = 0;
+
+	char_info_t * pCharacter = getCharInfo(val);
+	if(pCharacter->show)
+	{
+		// Code to show the character
+		
+		if(pCurrentWindow != NULL)		// Make sure there is a valid window object
+		{
+			if(pCharacter->causedNewline)		// Check if the character is meant to cause a new line
+			{
+				pCurrentWindow->cursorX = pCurrentWindow->xMin;		// Reset the x cursor to the beginning
+				if((pCurrentWindow->yMax - pCharacter->yDim) < pCurrentWindow->cursorY)			// Check if the y cursor will runn off the screen
+				{
+					pCharacter->show = false;						// If so then don't show the character
+					pCurrentWindow->cursorY += pCharacter->yDim;	// And also only increment the cursor if within the proper bounds to avoid a long-term wraparound condition
+				}
+			}
+			else if((pCurrentWindow->xMax - pCharacter->xDim) < pCurrentWindow->cursorX)	// If the character does not trigger newlines then make sure there is still room for it left-to-right
+			{
+				pCharacter->causedNewline = true;					// If there is not then it needs to cause a newline
+				pCurrentWindow->cursorX = pCurrentWindow->xMin;		// Go through the same process as above to check bounds
+				if((pCurrentWindow->yMax - pCharacter->yDim) < pCurrentWindow->cursorY)
+				{
+					pCharacter->show = false;
+					pCurrentWindow->cursorY += pCharacter->yDim;
+				}
+			}
+			else	// If will be entirely within bounds then simply increment the x cursor
+			{
+				pCurrentWindow->cursorX += pCharacter->xDim;
+			}
+			// Write data to display, but only if it is still meant to be shown
+			if(pCharacter->show)
+			{
+				fillFromArray(pCurrentWindow->cursorX, pCurrentWindow->cursorY, pCurrentWindow->cursorX+pCharacter->xDim, pCurrentWindow->cursorY+pCharacter->yDim, pCharacter->dataSize, pCharacter->pdata);
+				numWritten = 1;
+			}
+		}
+	}
+
+	pLastCharacter = pCharacter;	// Set this character as the previous character 
+	return numWritten;				
+}
+
+
+
+
+
+
+
 
 
 
@@ -402,7 +456,7 @@ uint16_t getNewColorOffset(uint16_t colorCycleLength, uint16_t startColorOffset,
 
 
 // Callbacks default (blank) implementation
-void hyperdisplayXLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t width){}
-void hyperdisplayYLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t width){}
+void hyperdisplayXLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width){}
+void hyperdisplayYLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width){}
 void hyperdisplayRectangleCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, bool filled){}
 void hyperdisplayFillFromArrayCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t size, color_t data[]){}

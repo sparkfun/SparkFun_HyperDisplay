@@ -20,9 +20,9 @@ OLED::OLED()
 
 }
 
-size_t OLED::write(uint8_t)		
+char_info_t * OLED::getCharInfo(uint8_t val)
 {
-  return 0;
+  return NULL;
 }
 
 void OLED::pixel(uint16_t x0, uint16_t y0, color_t color)

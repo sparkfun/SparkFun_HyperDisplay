@@ -37,9 +37,9 @@ EInk::EInk()
   
 }
 
-size_t EInk::write(uint8_t)
+char_info_t * EInk::getCharInfo(uint8_t val)
 {
-  return 0; // Do nothing hahahahahaha
+  return NULL;
 }
 
 void EInk::pixel(uint16_t x0, uint16_t y0, color_t color)
