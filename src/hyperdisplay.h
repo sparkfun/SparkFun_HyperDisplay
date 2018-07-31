@@ -21,6 +21,10 @@ Purpose: This library standardizes interfaces to displays of many types.
 
 #include <Arduino.h>
 
+#define SWAP_COORDS(a, b) uint16_t temp = a; \
+              a = b; \
+              b = temp; \
+
 typedef void * color_t; 
 
 class hyperdisplay : public Print{
@@ -29,6 +33,11 @@ class hyperdisplay : public Print{
 
     	void lineHigh(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color[], uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width);
     	void lineLow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color[], uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width);
+    	
+    	void circle_Bresenham(uint16_t x0, uint16_t y0, uint16_t radius, color_t color, bool fill);
+		void circle_midpoint(uint8_t x0, uint8_t y0, uint8_t radius, color_t color, bool fill);
+		void circle_eight(uint8_t xc, uint8_t yc, int16_t dx, int16_t dy, color_t color, bool fill);
+
     	uint16_t getNewColorOffset(uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t numWritten);
 
     public:
@@ -47,8 +56,8 @@ class hyperdisplay : public Print{
         virtual void fillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t size, color_t data[]); 
 
         // These use the 'primitive' functions and are available to users
-        void line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color , uint16_t width = 1); 
-        void polygon(uint16_t x[], uint16_t y[], uint8_t numSides, uint16_t width = 1);
+        void line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, uint16_t width = 1); 
+        void polygon(uint16_t x[], uint16_t y[], uint8_t numSides, color_t color, uint16_t width = 1);
         void circle(uint16_t x0, uint16_t y0, uint16_t radius, color_t color, bool filled = false);
         void fillScreen(color_t color);
     
@@ -64,8 +73,8 @@ class hyperdisplay : public Print{
 // Note that the pure virtual function pixel() does not have a callback - if it is needed it should be included in the derived class,
 // and that if the user provides implementation specific versions of the other primitive functions then these callbacks will not be
 // called, so if the functionality is desired it can be re-implemented.
-void hyperdisplayXLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t width)  	__attribute__ ((weak));
-void hyperdisplayYLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t width) 		__attribute__ ((weak));
+void hyperdisplayXLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width)  	__attribute__ ((weak));
+void hyperdisplayYLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width) 		__attribute__ ((weak));
 void hyperdisplayRectangleCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, bool filled) 						__attribute__ ((weak));
 void hyperdisplayFillFromArrayCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t size, color_t data[]) 				__attribute__ ((weak));
 

@@ -1,6 +1,5 @@
 #include "hyperdisplay.h"
 
-
 class SomeDisplay : public hyperdisplay{
   private:
   protected:
