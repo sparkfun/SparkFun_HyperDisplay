@@ -47,7 +47,6 @@ void hyperdisplay::yline(uint16_t x0, uint16_t y0, uint16_t len, color_t color[]
 
 void hyperdisplay::rectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, bool filled)
 {
-	uint16_t temp = 0;
 	if(x0 > x1)
 	{ 
 		SWAP_COORDS(x0, x1);
@@ -90,8 +89,19 @@ void hyperdisplay::fillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t
 		SWAP_COORDS(y0, y1);
 	}
 
-	// for(uint16_t x = x0; x < x1)
-	// hyperdisplayFillFromArrayCallback( x0, y0, x1, y1, size, data);
+	uint32_t pixel_count = 0;
+	for(uint16_t x = x0; x < x1; x++)
+	{
+		for(uint16_t y = y0; y < y1; y++)
+		{
+			pixel(x, y, *(data + pixel_count++));
+			if(pixel_count >= size)
+			{
+				pixel_count = 0;
+			}
+		}
+	}
+	hyperdisplayFillFromArrayCallback( x0, y0, x1, y1, size, data);
 }
 
 
