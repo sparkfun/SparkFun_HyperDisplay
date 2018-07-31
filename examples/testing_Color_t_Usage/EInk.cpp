@@ -47,22 +47,4 @@ void EInk::pixel(uint16_t x0, uint16_t y0, color_t color)
 
 }
 
-// void EInk::xline(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t width = 1)
-// {
 
-// }
-
-// void EInk::yline(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t width = 1)
-// {
-
-// }
-
-// void EInk::rectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, bool filled = false)
-// {
-
-// }
-
-// void EInk::fillFromArray(uint16_t x, uint16_t y, uint16_t size, color_t data[])
-// {
-
-// }

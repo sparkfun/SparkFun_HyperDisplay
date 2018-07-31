@@ -17,6 +17,7 @@ class OLED : public hyperdisplay{
   void printColor(color_t color);
   
   size_t write(uint8_t);
+  void pixel(uint16_t x0, uint16_t y0, color_t color);
 };
 
 #endif /* OLED_H */

@@ -30,24 +30,4 @@ void OLED::pixel(uint16_t x0, uint16_t y0, color_t color)
 
 }
 
-// void OLED::xline(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t width = 1)
-// {
-
-// }
-
-// void OLED::yline(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t width = 1)
-// {
-
-// }
-
-// void OLED::rectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, bool filled = false)
-// {
-
-// }
-
-// void OLED::fillFromArray(uint16_t x, uint16_t y, uint16_t size, color_t data[])
-// {
-
-// }
-
 
