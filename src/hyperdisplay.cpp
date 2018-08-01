@@ -19,13 +19,12 @@ header file: hyperdisplay.h
 
 void hyperdisplay::xline(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width)
 {
-	uint16_t colorOffset = startColorOffset;
 	for(uint16_t indi = 0; indi < len; indi++)
 	{
-		pixel(x0 + indi, y0, *(color + colorOffset++));
-		if(colorOffset >= colorCycleLength)
+		pixel(x0 + indi, y0, *(color + startColorOffset++));
+		if(startColorOffset >= colorCycleLength)
 		{
-			colorOffset = 0;
+			startColorOffset = 0;
 		}
 	}
 	hyperdisplayXLineCallback( x0, y0, len, color, colorCycleLength, startColorOffset, width);
@@ -33,13 +32,12 @@ void hyperdisplay::xline(uint16_t x0, uint16_t y0, uint16_t len, color_t color[]
 
 void hyperdisplay::yline(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width)
 {
-	uint16_t colorOffset = startColorOffset;
 	for(uint16_t indi = 0; indi < len; indi++)
 	{
-		pixel(x0 , y0 + indi, *(color + colorOffset));
-		if(colorOffset >= colorCycleLength)
+		pixel(x0 , y0 + indi, *(color + startColorOffset));
+		if(startColorOffset >= colorCycleLength)
 		{
-			colorOffset = 0;
+			startColorOffset = 0;
 		}
 	}
 	hyperdisplayYLineCallback( x0, y0, len, color, colorCycleLength, startColorOffset, width);
