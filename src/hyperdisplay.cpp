@@ -9,7 +9,7 @@ header file: hyperdisplay.h
 
 #include "hyperdisplay.h"
 
-wind_info_t hyperdisplayDefaultWindow;
+wind_info_t hyperdisplayDefaultWindow;		// This window is used by default so that the user does not have to worry about windows if they don't want to
 
 
 // void hyperdisplay::pixel(uint16_t x0, uint16_t y0, color_t color)
@@ -490,6 +490,14 @@ void hyperdisplay::setupDefaultWindow( void )
 	pCurrentWindow->xReset = 0;
 	pCurrentWindow->yReset = 0;
 	pCurrentWindow->pLastCharacter = NULL;
+	pCurrentWindow->data = NULL;
+}
+
+void hyperdisplay::setupHyperDisplay(uint16_t xSize, uint16_t ySize)
+{
+	xExt = xSize;
+	yExt = ySize;
+	setupDefaultWindow();
 }
 
 

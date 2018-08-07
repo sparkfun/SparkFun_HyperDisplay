@@ -51,29 +51,30 @@ typedef struct window_info{
     uint16_t xReset;
     uint16_t yReset;
     char_info_t * pLastCharacter;   // A pointer to information about the last character written.
+    color_t data;                   // A pointer to pixel data that is specific to the window. Can be left as NULL
 }wind_info_t;               // Window infomation structure for placing text on the display
 
 class hyperdisplay : public Print{
     private:
     protected:
 
-    	// Some protected drawing functions
+    	// Some protected drawing functions - not to be used directly
     	void lineHigh(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width);
     	void lineLow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width);
-    	
     	void circle_Bresenham(uint16_t x0, uint16_t y0, uint16_t radius, color_t color, bool fill);
 		void circle_midpoint(uint8_t x0, uint8_t y0, uint8_t radius, color_t color, bool fill);
 		void circle_eight(uint8_t xc, uint8_t yc, int16_t dx, int16_t dy, color_t color, bool fill);
 
+        // Utility functions
     	uint16_t getNewColorOffset(uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t numWritten);
-
-        void setupDefaultWindow( void );
+        void setupDefaultWindow( void );                                                                        // Fills out the default window structure and associates it to the current window 
+        void setupHyperDisplay(uint16_t xSize, uint16_t ySize);                                                 // Call this function in the begin() function of the derived class to ensure that all necessary paramters for the hyperdisplay parent class are set correctly
 
     public:
     // Parameters
         uint16_t xExt, yExt;        	// The rectilinear extent of the display in two dimensions (number of pixels)
         // uint8_t colorDepth;         	// The number of bits of color depth for each pixel. // commented out because we implemented color_t to allow for flexible color types
-        color_t * pScratch;         	// A pointer to a scratch space for maniuplating data. Can be set to NULL if not being used
+        // color_t * pScratch;         	// A pointer to a scratch space for maniuplating data. Can be set to NULL if not being used // Commented out because this ability is transferred to be part of the windows
         wind_info_t * pCurrentWindow;	// A pointer to the active window information structure.
 
     // Methods
