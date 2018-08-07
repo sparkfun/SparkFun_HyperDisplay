@@ -7,45 +7,55 @@ header file: hyperdisplay.h
 
 
 
-
-
 #include "hyperdisplay.h"
 
+// void hyperdisplay::pixel(uint16_t x0, uint16_t y0, color_t color)
+// {
+	// TIP: When you implement pixel for a derived class be aware that x0 and y0 are in terms of the current window.
+	// For example if pixel() calls a hardware-specific function hardwarePixel() that draws to the display RAM 
+	// coordinate (hX, hY) then it should look smething like this:
+	/*
 
+	uint16_t hX = pCurrentWindow->xMin + x0;
+	uint16_t hY = pCurrentWindow->xMin + y0;
+	hardwarePixel(hX, hY, color);
+	
+	*/
+	// Furthermore this principal applies any time that you are overwriting one of the 'primitive' drawing functions.
+// }
 
-
-
-
-
-void hyperdisplay::xline(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width)
+void hyperdisplay::xline(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width)
 {
-	uint16_t colorOffset = startColorOffset;
+	// Note: color_t data is always a void pointer. You need to make sure that it points at the correct color type with enough elements.
+	// In this case the correct number of elements is colorCycleLength
 	for(uint16_t indi = 0; indi < len; indi++)
 	{
-		pixel(x0 + indi, y0, *(color + colorOffset++));
-		if(colorOffset >= colorCycleLength)
+		pixel(x0 + indi, y0, getOffsetColor(data, startColorOffset++));
+		if(startColorOffset >= colorCycleLength)
 		{
-			colorOffset = 0;
+			startColorOffset = 0;
 		}
 	}
-	hyperdisplayXLineCallback( x0, y0, len, color, colorCycleLength, startColorOffset, width);
+	hyperdisplayXLineCallback( x0, y0, len, data, colorCycleLength, startColorOffset, width);
 }
 
-void hyperdisplay::yline(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width)
+void hyperdisplay::yline(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width)
 {
-	uint16_t colorOffset = startColorOffset;
+	// Note: color_t data is always a void pointer. You need to make sure that it points at the correct color type with enough elements.
+	// In this case the correct number of elements is colorCycleLength
+
 	for(uint16_t indi = 0; indi < len; indi++)
 	{
-		pixel(x0 , y0 + indi, *(color + colorOffset));
-		if(colorOffset >= colorCycleLength)
+		pixel(x0, y0 + indi, getOffsetColor(data, startColorOffset++));
+		if(startColorOffset >= colorCycleLength)
 		{
-			colorOffset = 0;
+			startColorOffset = 0;
 		}
 	}
-	hyperdisplayYLineCallback( x0, y0, len, color, colorCycleLength, startColorOffset, width);
+	hyperdisplayYLineCallback( x0, y0, len, data, colorCycleLength, startColorOffset, width);
 }
 
-void hyperdisplay::rectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, bool filled)
+void hyperdisplay::rectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, uint8_t width, bool filled)
 {
 	if(x0 > x1)
 	{ 
@@ -69,15 +79,15 @@ void hyperdisplay::rectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
 	{
 		uint16_t ylen = y1 - y0;
 
-		xline(x0, y0, xlen, &color, 1, 0, 1);
-		xline(x0, y1, xlen, &color, 1, 0, 1);
-		yline(x0, y0, ylen, &color, 1, 0, 1);
-		yline(x1, y0, ylen, &color, 1, 0, 1);
+		xline(x0, y0, xlen, &color, 1, 0, width);
+		xline(x0, y1, xlen, &color, 1, 0, width);
+		yline(x0, y0, ylen, &color, 1, 0, width);
+		yline(x1, y0, ylen, &color, 1, 0, width);
 	}
-	hyperdisplayRectangleCallback( x0, y0, x1, y1, color, filled);
+	hyperdisplayRectangleCallback( x0, y0, x1, y1, color, width, filled);
 }
 
-void hyperdisplay::fillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t size, color_t data[])
+void hyperdisplay::fillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t size, color_t data)
 {
 	if(x0 > x1)
 	{ 
@@ -94,7 +104,7 @@ void hyperdisplay::fillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t
 	{
 		for(uint16_t y = y0; y < y1; y++)
 		{
-			pixel(x, y, *(data + pixel_count++));
+			pixel(x, y, getOffsetColor(data, pixel_count++));
 			if(pixel_count >= size)
 			{
 				pixel_count = 0;
@@ -105,55 +115,61 @@ void hyperdisplay::fillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t
 }
 
 
-
-// FYI this virtual function can be overwritten. It is just the most basic default version
-size_t hyperdisplay::write(uint8_t val)
-{
-	size_t numWritten = 0;
-
-	char_info_t * pCharacter = getCharInfo(val);
-	if(pCharacter->show)
+#if HYPERDISPLAY_USE_PRINT
+	// FYI this virtual function can be overwritten. It is just the most basic default version
+	size_t hyperdisplay::write(uint8_t val)
 	{
-		// Code to show the character
-		
-		if(pCurrentWindow != NULL)		// Make sure there is a valid window object
+		size_t numWritten = 0;
+
+		char_info_t * pCharacter = getCharInfo(val);
+		if(pCharacter->show)
 		{
-			if(pCharacter->causedNewline)		// Check if the character is meant to cause a new line
+			// Code to show the character
+			
+			if(pCurrentWindow != NULL)		// Make sure there is a valid window object
 			{
-				pCurrentWindow->cursorX = pCurrentWindow->xMin;		// Reset the x cursor to the beginning
-				if((pCurrentWindow->yMax - pCharacter->yDim) < pCurrentWindow->cursorY)			// Check if the y cursor will runn off the screen
+				if(pCharacter->causedNewline)		// Check if the character is meant to cause a new line
 				{
-					pCharacter->show = false;						// If so then don't show the character
-					pCurrentWindow->cursorY += pCharacter->yDim;	// And also only increment the cursor if within the proper bounds to avoid a long-term wraparound condition
+					pCurrentWindow->cursorX = pCurrentWindow->xMin;		// Reset the x cursor to the beginning
+					if((pCurrentWindow->yMax - pCharacter->yDim) < pCurrentWindow->cursorY)			// Check if the y cursor will runn off the screen
+					{
+						pCharacter->show = false;						// If so then don't show the character
+						pCurrentWindow->cursorY += pCharacter->yDim;	// And also only increment the cursor if within the proper bounds to avoid a long-term wraparound condition
+					}
 				}
-			}
-			else if((pCurrentWindow->xMax - pCharacter->xDim) < pCurrentWindow->cursorX)	// If the character does not trigger newlines then make sure there is still room for it left-to-right
-			{
-				pCharacter->causedNewline = true;					// If there is not then it needs to cause a newline
-				pCurrentWindow->cursorX = pCurrentWindow->xMin;		// Go through the same process as above to check bounds
-				if((pCurrentWindow->yMax - pCharacter->yDim) < pCurrentWindow->cursorY)
+				else if((pCurrentWindow->xMax - pCharacter->xDim) < pCurrentWindow->cursorX)	// If the character does not trigger newlines then make sure there is still room for it left-to-right
 				{
-					pCharacter->show = false;
-					pCurrentWindow->cursorY += pCharacter->yDim;
+					pCharacter->causedNewline = true;					// If there is not then it needs to cause a newline
+					pCurrentWindow->cursorX = pCurrentWindow->xMin;		// Go through the same process as above to check bounds
+					if((pCurrentWindow->yMax - pCharacter->yDim) < pCurrentWindow->cursorY)
+					{
+						pCharacter->show = false;
+						pCurrentWindow->cursorY += pCharacter->yDim;
+					}
 				}
-			}
-			else	// If will be entirely within bounds then simply increment the x cursor
-			{
-				pCurrentWindow->cursorX += pCharacter->xDim;
-			}
-			// Write data to display, but only if it is still meant to be shown
-			if(pCharacter->show)
-			{
-				fillFromArray(pCurrentWindow->cursorX, pCurrentWindow->cursorY, pCurrentWindow->cursorX+pCharacter->xDim, pCurrentWindow->cursorY+pCharacter->yDim, pCharacter->dataSize, pCharacter->pdata);
-				numWritten = 1;
+				else	// If will be entirely within bounds then simply increment the x cursor
+				{
+					pCurrentWindow->cursorX += pCharacter->xDim;
+				}
+				// Write data to display, but only if it is still meant to be shown
+				if(pCharacter->show)
+				{
+					fillFromArray(pCurrentWindow->cursorX, pCurrentWindow->cursorY, pCurrentWindow->cursorX+pCharacter->xDim, pCurrentWindow->cursorY+pCharacter->yDim, pCharacter->dataSize, pCharacter->pdata);
+					numWritten = 1;
+				}
 			}
 		}
+
+		pCurrentWindow->pLastCharacter = pCharacter;	// Set this character as the previous character 
+		return numWritten;				
 	}
-
-	pLastCharacter = pCharacter;	// Set this character as the previous character 
-	return numWritten;				
-}
-
+#else /* HYPERDISPLAY_USE_PRINT */
+	// This is here in case you choose not to implement printing functions
+	size_t hyperdisplay::write(uint8_t val)
+	{
+		Serial.write(val);
+	}
+#endif /* HYPERDISPLAY_USE_PRINT */
 
 
 
@@ -224,13 +240,18 @@ void hyperdisplay::circle(uint16_t x0, uint16_t y0, uint16_t radius, color_t col
 	}
 }
 
-void hyperdisplay::fillScreen(color_t color)
+void hyperdisplay::fillWindow(color_t color)
 {
-	rectangle(0, 0, xExt, yExt, color, true);
+	rectangle(pCurrentWindow->xMin, pCurrentWindow->yMin, pCurrentWindow->xMax, pCurrentWindow->yMax, color, true);
 }
 
 
 
+
+
+#if HYPERDISPLAY_USE_MATH
+	// Write math functions here
+#endif	
 
 
 
@@ -242,9 +263,12 @@ void hyperdisplay::fillScreen(color_t color)
 
 
 // Protected drawing functions
-void hyperdisplay::lineHigh(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color[], uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width)
+void hyperdisplay::lineHigh(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width)
 {
+	// Note: color_t color is always a void pointer. You need to make sure that it points at the correct color type with enough elements.
+	// In this case the correct number of elements is colorCycleLength
 	uint16_t dy = y1 - y0;	// Guaranteed positive
+
   	int32_t dx = x1 - x0;
 	int8_t xi = 1;
 
@@ -273,8 +297,11 @@ void hyperdisplay::lineHigh(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, 
 	}
 }
     	
-void hyperdisplay::lineLow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color[], uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width)
+void hyperdisplay::lineLow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width)
 {
+	// Note: color_t color is always a void pointer. You need to make sure that it points at the correct color type with enough elements.
+	// In this case the correct number of elements is colorCycleLength
+
 	uint16_t dx = x1 - x0;	// Guaranteed positive
 	int32_t dy = y1 - y0;
 	int8_t yi = 1;
@@ -456,7 +483,7 @@ uint16_t getNewColorOffset(uint16_t colorCycleLength, uint16_t startColorOffset,
 
 
 // Callbacks default (blank) implementation
-void hyperdisplayXLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width){}
-void hyperdisplayYLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t color[], uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width){}
+void hyperdisplayXLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t color, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width){}
+void hyperdisplayYLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t color, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width){}
 void hyperdisplayRectangleCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, bool filled){}
-void hyperdisplayFillFromArrayCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t size, color_t data[]){}
+void hyperdisplayFillFromArrayCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t size, color_t data){}
