@@ -84,9 +84,9 @@ class hyperdisplay : public Print{
 
         // 'primitive' drawing functions - coordinates are with respect to the current window
         virtual void pixel(uint16_t x0, uint16_t y0, color_t color) = 0; // Made a pure virtual function so that derived classes are forced to implement the pixel function
-        virtual void xline(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, uint16_t width = 1); // Default implementation using individual pixels so that user CAN add just a way to write to a pixel,  but highly reccommend optimizing
-        virtual void yline(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, uint16_t width = 1); //^
-        virtual void rectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, uint8_t width = 1, bool filled = false); 
+        virtual void xline(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goLeft = false); // Default implementation using individual pixels so that user CAN add just a way to write to a pixel,  but highly reccommend optimizing
+        virtual void yline(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goUp = false); //^
+        virtual void rectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, bool filled = false, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool gradientVertical = false, bool reverseGradient = false); 
         virtual void fillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t size, color_t data); 
 
         // These use the 'primitive' functions and are available to users - coordinates are with respect to the current window
@@ -117,10 +117,10 @@ class hyperdisplay : public Print{
 // Note that the pure virtual function pixel() does not have a callback - if it is needed it should be included in the derived class,
 // and that if the user provides implementation specific versions of the other primitive functions then these callbacks will not be
 // called, so if the functionality is desired it can be re-implemented.
-void hyperdisplayXLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t color, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width)  	__attribute__ ((weak));
-void hyperdisplayYLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t color, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width) 	__attribute__ ((weak));
-void hyperdisplayRectangleCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, uint8_t width, bool filled) 												__attribute__ ((weak));
-void hyperdisplayFillFromArrayCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t size, color_t data) 										__attribute__ ((weak));
+void hyperdisplayXLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goLeft = false)                                                                                 __attribute__ ((weak));
+void hyperdisplayYLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goUp = false) 	                                                                                __attribute__ ((weak));
+void hyperdisplayRectangleCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, bool filled = false, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool gradientVertical = false, bool reverseGradient = false)    __attribute__ ((weak));
+void hyperdisplayFillFromArrayCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t numPixels, color_t data)                                                                                                                                 __attribute__ ((weak));
 
 #endif /* HYPERDISPLAY_H */
 
