@@ -462,7 +462,7 @@ void hyperdisplay::circle_eight(uint8_t x0, uint8_t y0, int16_t dx, int16_t dy, 
 	}
 }
 
-uint16_t getNewColorOffset(uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t numWritten)
+uint16_t hyperdisplay::getNewColorOffset(uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t numWritten)
 {
 	uint16_t remainder = (numWritten % colorCycleLength);
 	if(remainder < startColorOffset)
@@ -473,6 +473,20 @@ uint16_t getNewColorOffset(uint16_t colorCycleLength, uint16_t startColorOffset,
 	{
 		return (remainder) - startColorOffset; 
 	}
+}
+
+void hyperdisplay::setupDefaultWindow( void )
+{
+	pCurrentWindow = &hyperdisplayDefaultWindow;
+	pCurrentWindow->xMin = 0;
+	pCurrentWindow->yMin = 0;
+	pCurrentWindow->xMax = xExt;
+	pCurrentWindow->yMax = yExt;
+	pCurrentWindow->cursorX = 0;
+	pCurrentWindow->cursorY = 0;
+	pCurrentWindow->xReset = 0;
+	pCurrentWindow->yReset = 0;
+	pCurrentWindow->pLastCharacter = NULL;
 }
 
 

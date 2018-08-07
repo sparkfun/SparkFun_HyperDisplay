@@ -67,6 +67,8 @@ class hyperdisplay : public Print{
 
     	uint16_t getNewColorOffset(uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t numWritten);
 
+        void setupDefaultWindow( void );
+
     public:
     // Parameters
         uint16_t xExt, yExt;        	// The rectilinear extent of the display in two dimensions (number of pixels)
@@ -105,6 +107,8 @@ class hyperdisplay : public Print{
         #endif
 
 };
+
+wind_info_t hyperdisplayDefaultWindow;
 
 
 
