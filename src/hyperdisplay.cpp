@@ -9,6 +9,9 @@ header file: hyperdisplay.h
 
 #include "hyperdisplay.h"
 
+wind_info_t hyperdisplayDefaultWindow;
+
+
 // void hyperdisplay::pixel(uint16_t x0, uint16_t y0, color_t color)
 // {
 	// TIP: When you implement pixel for a derived class be aware that x0 and y0 are in terms of the current window.

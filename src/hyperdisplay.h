@@ -108,8 +108,6 @@ class hyperdisplay : public Print{
 
 };
 
-wind_info_t hyperdisplayDefaultWindow;
-
 
 
 
