@@ -34,7 +34,7 @@ typedef void * color_t;
 
 typedef struct character_info{
 	color_t * pdata;		// A pointer to the data to write
-	uint32_t dataSize;		// The number of color_t types that pdata points to
+	uint32_t numPixels;		// The number of color_t types that pdata points to
 	uint16_t xDim;			// Number of pixels in x dimension for rectilinear characters
 	uint16_t yDim;			// Number of pixels in y dimension for rectilinear characters
 	bool show;				// Whether or not to actually show the character
@@ -52,7 +52,7 @@ typedef struct window_info{
     uint16_t yReset;
     char_info_t * pLastCharacter;   // A pointer to information about the last character written.
     color_t data;                   // A pointer to pixel data that is specific to the window. Can be left as NULL
-}wind_info_t;               // Window infomation structure for placing text on the display
+}wind_info_t;                       // Window infomation structure for placing text on the display
 
 class hyperdisplay : public Print{
     private:
@@ -73,9 +73,10 @@ class hyperdisplay : public Print{
     public:
     // Parameters
         uint16_t xExt, yExt;        	// The rectilinear extent of the display in two dimensions (number of pixels)
-        // uint8_t colorDepth;         	// The number of bits of color depth for each pixel. // commented out because we implemented color_t to allow for flexible color types
-        // color_t * pScratch;         	// A pointer to a scratch space for maniuplating data. Can be set to NULL if not being used // Commented out because this ability is transferred to be part of the windows
         wind_info_t * pCurrentWindow;	// A pointer to the active window information structure.
+        // uint8_t colorDepth;          // The number of bits of color depth for each pixel. // commented out because we implemented color_t to allow for flexible color types
+        // color_t * pScratch;          // A pointer to a scratch space for maniuplating data. Can be set to NULL if not being used // Commented out because this ability is transferred to be part of the windows
+        
 
     // Methods
         // A method for dealing with the color_t flexibility:
@@ -83,8 +84,8 @@ class hyperdisplay : public Print{
 
         // 'primitive' drawing functions - coordinates are with respect to the current window
         virtual void pixel(uint16_t x0, uint16_t y0, color_t color) = 0; // Made a pure virtual function so that derived classes are forced to implement the pixel function
-        virtual void xline(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width = 1); // Default implementation using individual pixels so that user CAN add just a way to write to a pixel,  but highly reccommend optimizing
-        virtual void yline(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width = 1); //^
+        virtual void xline(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, uint16_t width = 1); // Default implementation using individual pixels so that user CAN add just a way to write to a pixel,  but highly reccommend optimizing
+        virtual void yline(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, uint16_t width = 1); //^
         virtual void rectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, uint8_t width = 1, bool filled = false); 
         virtual void fillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t size, color_t data); 
 
