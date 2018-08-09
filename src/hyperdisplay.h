@@ -120,7 +120,7 @@ class hyperdisplay : public Print{
 void hyperdisplayXLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goLeft = false)                                                                                 __attribute__ ((weak));
 void hyperdisplayYLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goUp = false) 	                                                                                __attribute__ ((weak));
 void hyperdisplayRectangleCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, bool filled = false, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool gradientVertical = false, bool reverseGradient = false)    __attribute__ ((weak));
-void hyperdisplayFillFromArrayCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t numPixels, color_t data)                                                                                                                                 __attribute__ ((weak));
+void hyperdisplayFillFromArrayCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t numPixels, color_t data)                                                                                                                            __attribute__ ((weak));
 
 #endif /* HYPERDISPLAY_H */
 
