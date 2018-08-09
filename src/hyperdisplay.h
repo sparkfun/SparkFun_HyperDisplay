@@ -33,7 +33,7 @@ Purpose: This library standardizes interfaces to displays of many types.
 typedef void * color_t; 
 
 typedef struct character_info{
-	color_t * pdata;		// A pointer to the data to write
+	color_t  data;		    // The data that is used to fill the character frame
 	uint32_t numPixels;		// The number of color_t types that pdata points to
 	uint16_t xDim;			// Number of pixels in x dimension for rectilinear characters
 	uint16_t yDim;			// Number of pixels in y dimension for rectilinear characters
@@ -42,15 +42,15 @@ typedef struct character_info{
 }char_info_t;				// Character information structure for placing pixels in a window
 
 typedef struct window_info{
-    uint16_t xMin;              // FYI window coordiantes use the hardware frame of reference
+    uint16_t xMin;              // FYI window min/max use the hardware frame of reference
     uint16_t xMax;
     uint16_t yMin;
     uint16_t yMax;
-    int32_t  cursorX;
-    int32_t  cursorY;
-    uint16_t xReset;
-    uint16_t yReset;
-    char_info_t * pLastCharacter;   // A pointer to information about the last character written.
+    int32_t  cursorX;           // Where the cursor is currently in window-coordinates
+    int32_t  cursorY;           // Where the cursor is currently in window-coordinates
+    uint16_t xReset;            // Where the cursor goes on a reset location (window coordinates)
+    uint16_t yReset;            // Where the cursor goes on a reset location (window coordinates)
+    char_info_t lastCharacter;      // Information about the last character written.
     color_t data;                   // A pointer to pixel data that is specific to the window. Can be left as NULL
 }wind_info_t;                       // Window infomation structure for placing text on the display
 
@@ -59,16 +59,16 @@ class hyperdisplay : public Print{
     protected:
 
     	// Some protected drawing functions - not to be used directly
-    	void lineHigh(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width);
-    	void lineLow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width);
+    	void lineHigh(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width, bool reverseGradient);
+    	void lineLow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width, bool reverseGradient);
     	void circle_Bresenham(uint16_t x0, uint16_t y0, uint16_t radius, color_t color, bool fill);
 		void circle_midpoint(uint8_t x0, uint8_t y0, uint8_t radius, color_t color, bool fill);
 		void circle_eight(uint8_t xc, uint8_t yc, int16_t dx, int16_t dy, color_t color, bool fill);
 
         // Utility functions
     	uint16_t getNewColorOffset(uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t numWritten);
-        void setupDefaultWindow( void );                                                                        // Fills out the default window structure and associates it to the current window 
-        void setupHyperDisplay(uint16_t xSize, uint16_t ySize);                                                 // Call this function in the begin() function of the derived class to ensure that all necessary paramters for the hyperdisplay parent class are set correctly
+        virtual void setupDefaultWindow( void );                        // User can override this function                                                               // Fills out the default window structure and associates it to the current window 
+        void setupHyperDisplay(uint16_t xSize, uint16_t ySize);         // Call this function in the begin() function of the derived class to ensure that all necessary paramters for the hyperdisplay parent class are set correctly
 
     public:
     // Parameters
@@ -90,15 +90,15 @@ class hyperdisplay : public Print{
         virtual void fillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t size, color_t data); 
 
         // These use the 'primitive' functions and are available to users - coordinates are with respect to the current window
-        void line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, uint16_t width = 1); 
+        void line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, uint16_t width = 1, bool reverseGradient = false); 
         void polygon(uint16_t x[], uint16_t y[], uint8_t numSides, color_t color, uint16_t width = 1);
         void circle(uint16_t x0, uint16_t y0, uint16_t radius, color_t color, bool filled = false); // Fills the entire current window
         void fillWindow(color_t color);
     
         // Printing
         #if HYPERDISPLAY_USE_PRINT
-            virtual size_t write(uint8_t val); 						// This is the implementation of write that is inherited from, left as virtual to be implementation specific
-            virtual char_info_t * getCharInfo(uint8_t val) = 0;		// A pure virtual function - you must implement this to be able to instantiate an object
+            virtual size_t write(uint8_t val); 						        // This is the implementation of write that is inherited from, left as virtual to be implementation specific
+            virtual void getCharInfo(uint8_t val, char_info_t * pchar) = 0;		// A pure virtual function - you must implement this to be able to instantiate an object. The pchar pointer argument points to a valid char_info_t object that the function must fill out with the right values
         #else
             virtual size_t write(uint8_t val);
         #endif

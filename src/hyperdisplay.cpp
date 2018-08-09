@@ -10,7 +10,7 @@ header file: hyperdisplay.h
 #include "hyperdisplay.h"
 
 wind_info_t hyperdisplayDefaultWindow;		// This window is used by default so that the user does not have to worry about windows if they don't want to
-
+char_info_t hyperdisplayDefaultCharacter;
 
 // void hyperdisplay::pixel(uint16_t x0, uint16_t y0, color_t color)
 // {
@@ -163,46 +163,47 @@ void hyperdisplay::fillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t
 	{
 		size_t numWritten = 0;
 
-		char_info_t * pCharacter = getCharInfo(val);
-		if(pCharacter->show)
+
+		getCharInfo(val, &hyperdisplayDefaultCharacter);
+		if(hyperdisplayDefaultCharacter.show)
 		{
 			// Code to show the character
 			
 			if(pCurrentWindow != NULL)		// Make sure there is a valid window object
 			{
-				if(pCharacter->causedNewline)		// Check if the character is meant to cause a new line
+				if(hyperdisplayDefaultCharacter.causedNewline)		// Check if the character is meant to cause a new line
 				{
 					pCurrentWindow->cursorX = pCurrentWindow->xMin;		// Reset the x cursor to the beginning
-					if((pCurrentWindow->yMax - pCharacter->yDim) < pCurrentWindow->cursorY)			// Check if the y cursor will runn off the screen
+					if((pCurrentWindow->yMax - hyperdisplayDefaultCharacter.yDim) < pCurrentWindow->cursorY)			// Check if the y cursor will runn off the screen
 					{
-						pCharacter->show = false;						// If so then don't show the character
-						pCurrentWindow->cursorY += pCharacter->yDim;	// And also only increment the cursor if within the proper bounds to avoid a long-term wraparound condition
+						hyperdisplayDefaultCharacter.show = false;						// If so then don't show the character
+						pCurrentWindow->cursorY += hyperdisplayDefaultCharacter.yDim;	// And also only increment the cursor if within the proper bounds to avoid a long-term wraparound condition
 					}
 				}
-				else if((pCurrentWindow->xMax - pCharacter->xDim) < pCurrentWindow->cursorX)	// If the character does not trigger newlines then make sure there is still room for it left-to-right
+				else if((pCurrentWindow->xMax - hyperdisplayDefaultCharacter.xDim) < pCurrentWindow->cursorX)	// If the character does not trigger newlines then make sure there is still room for it left-to-right
 				{
-					pCharacter->causedNewline = true;					// If there is not then it needs to cause a newline
+					hyperdisplayDefaultCharacter.causedNewline = true;					// If there is not then it needs to cause a newline
 					pCurrentWindow->cursorX = pCurrentWindow->xMin;		// Go through the same process as above to check bounds
-					if((pCurrentWindow->yMax - pCharacter->yDim) < pCurrentWindow->cursorY)
+					if((pCurrentWindow->yMax - hyperdisplayDefaultCharacter.yDim) < pCurrentWindow->cursorY)
 					{
-						pCharacter->show = false;
-						pCurrentWindow->cursorY += pCharacter->yDim;
+						hyperdisplayDefaultCharacter.show = false;
+						pCurrentWindow->cursorY += hyperdisplayDefaultCharacter.yDim;
 					}
 				}
 				else	// If will be entirely within bounds then simply increment the x cursor
 				{
-					pCurrentWindow->cursorX += pCharacter->xDim;
+					pCurrentWindow->cursorX += hyperdisplayDefaultCharacter.xDim;
 				}
 				// Write data to display, but only if it is still meant to be shown
-				if(pCharacter->show)
+				if(hyperdisplayDefaultCharacter.show)
 				{
-					fillFromArray(pCurrentWindow->cursorX, pCurrentWindow->cursorY, pCurrentWindow->cursorX+pCharacter->xDim, pCurrentWindow->cursorY+pCharacter->yDim, pCharacter->numPixels, pCharacter->pdata);
+					fillFromArray(pCurrentWindow->cursorX, pCurrentWindow->cursorY, pCurrentWindow->cursorX+hyperdisplayDefaultCharacter.xDim, pCurrentWindow->cursorY+hyperdisplayDefaultCharacter.yDim, hyperdisplayDefaultCharacter.numPixels, hyperdisplayDefaultCharacter.data);
 					numWritten = 1;
 				}
 			}
 		}
 
-		pCurrentWindow->pLastCharacter = pCharacter;	// Set this character as the previous character 
+		pCurrentWindow->lastCharacter = hyperdisplayDefaultCharacter;	// Set this character as the previous character 
 		return numWritten;				
 	}
 #else /* HYPERDISPLAY_USE_PRINT */
@@ -223,7 +224,7 @@ void hyperdisplay::fillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t
 
 
 
-void hyperdisplay::line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color , uint16_t width)
+void hyperdisplay::line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width, bool reverseGradient)
 {
 	uint16_t absY, absX;
 
@@ -237,22 +238,22 @@ void hyperdisplay::line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, colo
   	{
 	    if( x0 > x1 )
 	    {
-	      	lineLow(x1, y1, x0, y0, &color, 1, 0, width);
+	      	lineLow(x1, y1, x0, y0, data, 1, 0, width, reverseGradient);
 	    }
 	    else
 	    {
-	      	lineLow(x0, y0, x1, y1, &color, 1, 0, width);
+	      	lineLow(x0, y0, x1, y1, data, 1, 0, width, reverseGradient);
 	    }
 	}
   	else
 	{
     	if( y0 > y1 )
       	{
-      		lineHigh(x1, y1, x0, y0, &color, 1, 0, width);
+      		lineHigh(x1, y1, x0, y0, data, 1, 0, width, reverseGradient);
       	}
     	else
     	{
-      		lineHigh(x0, y0, x1, y1, &color, 1, 0, width);
+      		lineHigh(x0, y0, x1, y1, data, 1, 0, width, reverseGradient);
   		}
 	}
 }
@@ -284,7 +285,7 @@ void hyperdisplay::circle(uint16_t x0, uint16_t y0, uint16_t radius, color_t col
 
 void hyperdisplay::fillWindow(color_t color)
 {
-	rectangle(pCurrentWindow->xMin, pCurrentWindow->yMin, pCurrentWindow->xMax, pCurrentWindow->yMax, color, true);
+	rectangle(0, 0, pCurrentWindow->xMax-pCurrentWindow->xMin, pCurrentWindow->yMax-pCurrentWindow->yMin, color, true, 1, 0, false, false);
 }
 
 
@@ -305,10 +306,18 @@ void hyperdisplay::fillWindow(color_t color)
 
 
 // Protected drawing functions
-void hyperdisplay::lineHigh(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width)
+void hyperdisplay::lineHigh(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width, bool reverseGradient)
 {
 	// Note: color_t color is always a void pointer. You need to make sure that it points at the correct color type with enough elements.
 	// In this case the correct number of elements is colorCycleLength
+	uint16_t halfWidth = width/2;
+	uint8_t shift = 0;
+	if(!(width % 2))
+	{
+		shift = 1;
+	}
+
+
 	uint16_t dy = y1 - y0;	// Guaranteed positive
 
   	int32_t dx = x1 - x0;
@@ -323,15 +332,13 @@ void hyperdisplay::lineHigh(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, 
 	int32_t D = 2*dx - dy;
 	uint16_t x = x0;
 	uint16_t consecutive = 0;
-	uint16_t currentColorOffset = startColorOffset;
 
 	for(uint8_t y = y0; y < y1; y++)
 	{
 		if( D > 0 )
 		{
-			yline(x, y-consecutive, consecutive, color, colorCycleLength, currentColorOffset, width);
-			rectangle(x, y-consecutive, x, y, color, colorCycleLength, currentColorOffset);
-			currentColorOffset = getNewColorOffset(colorCycleLength, currentColorOffset, consecutive);
+			rectangle(x-shift-halfWidth, y-consecutive, x+halfWidth, y, data, true, colorCycleLength, startColorOffset, true, reverseGradient); 
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, consecutive);
 
 		   	x = x + xi;
 		   	D = D - 2*dy;
@@ -340,10 +347,16 @@ void hyperdisplay::lineHigh(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, 
 	}
 }
     	
-void hyperdisplay::lineLow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t color, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width)
+void hyperdisplay::lineLow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width, bool reverseGradient)
 {
 	// Note: color_t color is always a void pointer. You need to make sure that it points at the correct color type with enough elements.
 	// In this case the correct number of elements is colorCycleLength
+	uint16_t halfWidth = width/2;
+	uint8_t shift = 0;
+	if(!(width % 2))
+	{
+		shift = 1;
+	}
 
 	uint16_t dx = x1 - x0;	// Guaranteed positive
 	int32_t dy = y1 - y0;
@@ -357,14 +370,13 @@ void hyperdisplay::lineLow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, c
 	int32_t D = 2*dy - dx;
 	uint16_t y = y0;
 	uint16_t consecutive = 0;
-	uint16_t currentColorOffset = startColorOffset;
 
 	for(uint8_t x = x0; x < x1; x++)
 	{
 		if( D > 0 )
 		{
-			xline(x-consecutive, y, consecutive, color, colorCycleLength, currentColorOffset, width);
-			currentColorOffset = getNewColorOffset(colorCycleLength, currentColorOffset, consecutive);
+			rectangle(x-consecutive, y-shift-halfWidth, x, y+halfWidth, data, true, colorCycleLength, startColorOffset, true, reverseGradient); 
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, consecutive);
 
 		   	y = y + yi;
 		   	D = D - 2*dx;
@@ -529,7 +541,7 @@ void hyperdisplay::setupDefaultWindow( void )
 	pCurrentWindow->cursorY = 0;
 	pCurrentWindow->xReset = 0;
 	pCurrentWindow->yReset = 0;
-	pCurrentWindow->pLastCharacter = NULL;
+	// pCurrentWindow->lastCharacter = NULL;	// 
 	pCurrentWindow->data = NULL;
 }
 
