@@ -12,6 +12,12 @@ header file: hyperdisplay.h
 wind_info_t hyperdisplayDefaultWindow;		// This window is used by default so that the user does not have to worry about windows if they don't want to
 char_info_t hyperdisplayDefaultCharacter;
 
+#if HYPERDISPLAY_USE_PRINT                  // 
+    #if HYPERDISPLAY_INCLUDE_DEFAULT_FONT   
+		uint16_t hyperdisplayDefaultXloc[HYPERDISPLAY_DEFAULT_FONT_WIDTH*HYPERDISPLAY_DEFAULT_FONT_HEIGHT];
+		uint16_t hyperdisplayDefaultYloc[HYPERDISPLAY_DEFAULT_FONT_WIDTH*HYPERDISPLAY_DEFAULT_FONT_HEIGHT];
+	#endif
+#endif
 // void hyperdisplay::pixel(int32_t x0, int32_t y0, color_t color)
 // {
 	// TIP: When you implement pixel for a derived class be aware that x0 and y0 are in terms of the current window.
@@ -203,6 +209,72 @@ void hyperdisplay::fillFromArray(int32_t x0, int32_t y0, int32_t x1, int32_t y1,
 	}
 	hyperdisplayFillFromArrayCallback(x0, y0, x1, y1, numPixels, data);
 }
+
+
+
+
+
+
+
+
+
+
+void hyperdisplay::pixel(int32_t x0, int32_t y0, color_t color)
+{
+	// Check window coordinate validity
+
+	hwpixel(x0, y0, color);
+}
+
+void xline(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goLeft = false)
+{
+	// Check window coordinate validity
+
+	hwxline(x0, y0, len, data, colorCycleLength, startColorOffset, goLeft);
+}
+
+void yline(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goUp = false)
+{
+	// Check window coordinate validity
+
+	hwyline(x0, y0, len, data, colorCycleLength, startColorOffset, goUp);
+}
+
+void hyperdisplay::rectangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, bool filled = false, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool gradientVertical = false, bool reverseGradient = false)
+{
+	// Check window coordinate validity
+
+	hwrectangle(x0, y0, x1, y1, data, filled, colorCycleLength, startColorOffset, gradientVertical, reverseGradient);
+}
+
+void hyperdisplay::fillFromArray(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t size, color_t data)
+{
+	// Check window coordinate validity
+
+	hwfillFromArray(x0, y0, x1, y1, size, data);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #if HYPERDISPLAY_USE_PRINT
@@ -578,6 +650,35 @@ void hyperdisplay::circle_eight(uint8_t x0, uint8_t y0, int16_t dx, int16_t dy, 
 uint16_t hyperdisplay::getNewColorOffset(uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t numWritten)
 {
 	return ((numWritten+startColorOffset) % colorCycleLength);
+}
+
+bool enforceWindowLimits(int32_t * x0, int32_t * y0, int32_t * x1, int32_t * y1)
+{
+	// x variables are checked against x extent of the window. 
+	// y variables are checked against y extent of the window.
+	// 0 variables are checked against the minimum dimension.
+	// 1 variables are checked against the maximum dimension.
+	// If you pass something to the wrong location it may not get checked as you need it to
+	bool x0less, y0less, x1less, y1less, x0more, y0more, x1more, y1more;
+
+	if(x0 != NULL){if((*x0) < (pCurrentWindow->xMin)){ x0less = true; }}else{ x0less = false; }
+	if(x1 != NULL){if((*x1) < (pCurrentWindow->xMin)){ x1less = true; }}else{ x1less = false; }
+	if(y0 != NULL){if((*y0) < (pCurrentWindow->yMin)){ y0less = true; }}else{ y0less = false; }
+	if(y1 != NULL){if((*y1) < (pCurrentWindow->yMin)){ y1less = true; }}else{ y1less = false; }
+
+	if(x0 != NULL){if((*x0) > (pCurrentWindow->xMax)){ x0more = true; }}else{ x0more = false; }
+	if(x1 != NULL){if((*x1) > (pCurrentWindow->xMax)){ x1more = true; }}else{ x1more = false; }
+	if(y0 != NULL){if((*y0) > (pCurrentWindow->yMax)){ y0more = true; }}else{ y0more = false; }
+	if(y1 != NULL){if((*y1) > (pCurrentWindow->yMax)){ y1more = true; }}else{ y1more = false; }
+
+	// Check that it is not entirely off-window
+	if((x0less && x1less) || (x0more && x1more)){ return false; }
+	if((y0less && y1less) || (y0more && y1more)){ return false; }
+
+	// Clip any variables as needed
+	if(x0less)
+
+	return pass;
 }
 
 void hyperdisplay::setupDefaultWindow( void )
