@@ -337,6 +337,16 @@ void hyperdisplay::fillWindow(color_t color)
 }
 
 
+#if HYPERDISPLAY_USE_PRINT
+	#if HYPERDISPLAY_INCLUDE_DEFAULT_FONT 					        
+	    void getCharInfo(uint8_t val, char_info_t * pchar)		// The defualt implementation 
+	    {
+
+	    }	
+	#endif
+#endif
+
+
 
 
 

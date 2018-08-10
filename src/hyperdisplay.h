@@ -16,15 +16,22 @@ Purpose: This library standardizes interfaces to displays of many types.
 
 */
 
-#ifndef HYPERDISPLAY_H // We are going to need a cooler name than 'display' in the long run
+#ifndef HYPERDISPLAY_H              // We are going to need a cooler name than 'display' in the long run
 #define HYPERDISPLAY_H
 
 #include <Arduino.h>
-#include "hyperdisplay_conf.h"  // The user-modifiable configuration file for the library
+#include "hyperdisplay_conf.h"      // The user-modifiable configuration file for the library
 
-#if HYPERDISPLAY_USE_MATH
+#if HYPERDISPLAY_USE_MATH                   // Extra special math functions for later
     #include <math.h>
 #endif
+
+#if HYPERDISPLAY_USE_PRINT                  // 
+    #if HYPERDISPLAY_INCLUDE_DEFAULT_FONT   
+        #include "font5x7.h"
+    #endif
+#endif
+
 
 #define SWAP_COORDS(a, b) uint16_t temp = a; \
               						  a = b; \
@@ -72,24 +79,29 @@ class hyperdisplay : public Print{
         virtual void setupDefaultWindow( void );                        // User can override this function                                                               // Fills out the default window structure and associates it to the current window 
         void setupHyperDisplay(uint16_t xSize, uint16_t ySize);         // Call this function in the begin() function of the derived class to ensure that all necessary paramters for the hyperdisplay parent class are set correctly
 
+        // A method for dealing with the color_t flexibility:
+        virtual color_t getOffsetColor(color_t base, uint32_t numPixels) = 0;  // This pure virtual function is required to get the correct pointer after incrementing by a number of pixels (which could have any amount of data behind them)
+
+         // Here are the lowest level APIs to the particular hardware. These functions are in hardware coordinates. The only one you need to implement is hwpixel, but you can implement the others if you a more efficient way to do it
+        virtual void hwpixel(uint16_t x0, uint16_t y0, color_t color) = 0; // Made a pure virtual function so that derived classes are forced to implement the pixel function
+        virtual void hwxline(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goLeft = false); // Default implementation using individual pixels so that user CAN add just a way to write to a pixel,  but highly reccommend optimizing
+        virtual void hwyline(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goUp = false); //^
+        virtual void hwrectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, bool filled = false, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool gradientVertical = false, bool reverseGradient = false); 
+        virtual void hwfillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t size, color_t data);
+
     public:
     // Parameters
         uint16_t xExt, yExt;        	// The rectilinear extent of the display in two dimensions (number of pixels)
         wind_info_t * pCurrentWindow;	// A pointer to the active window information structure.
-        // uint8_t colorDepth;          // The number of bits of color depth for each pixel. // commented out because we implemented color_t to allow for flexible color types
-        // color_t * pScratch;          // A pointer to a scratch space for maniuplating data. Can be set to NULL if not being used // Commented out because this ability is transferred to be part of the windows
-        
 
     // Methods
-        // A method for dealing with the color_t flexibility:
-        virtual color_t getOffsetColor(color_t base, uint32_t numPixels) = 0;  // This pure virtual function is required to get the correct pointer after incrementing by a number of pixels (which could have any amount of data behind them)
-
+        
         // 'primitive' drawing functions - coordinates are with respect to the current window
-        virtual void pixel(int32_t x0, int32_t y0, color_t color) = 0; // Made a pure virtual function so that derived classes are forced to implement the pixel function
-        virtual void xline(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goLeft = false); // Default implementation using individual pixels so that user CAN add just a way to write to a pixel,  but highly reccommend optimizing
-        virtual void yline(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goUp = false); //^
-        virtual void rectangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, bool filled = false, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool gradientVertical = false, bool reverseGradient = false); 
-        virtual void fillFromArray(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t size, color_t data); 
+        void pixel(int32_t x0, int32_t y0, color_t color) = 0; // Made a pure virtual function so that derived classes are forced to implement the pixel function
+        // void xline(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goLeft = false); // Default implementation using individual pixels so that user CAN add just a way to write to a pixel,  but highly reccommend optimizing
+        // void yline(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goUp = false); //^
+        void rectangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, bool filled = false, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool gradientVertical = false, bool reverseGradient = false); 
+        void fillFromArray(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t size, color_t data); 
 
         // These use the 'primitive' functions and are available to users - coordinates are with respect to the current window
         void line(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, uint16_t width = 1, bool reverseGradient = false); 
@@ -98,18 +110,17 @@ class hyperdisplay : public Print{
         void fillWindow(color_t color);
     
         // Printing
-        #if HYPERDISPLAY_USE_PRINT
-            virtual size_t write(uint8_t val); 						        // This is the implementation of write that is inherited from, left as virtual to be implementation specific
-            virtual void getCharInfo(uint8_t val, char_info_t * pchar) = 0;		// A pure virtual function - you must implement this to be able to instantiate an object. The pchar pointer argument points to a valid char_info_t object that the function must fill out with the right values
-        #else
-            virtual size_t write(uint8_t val);
+        virtual size_t write(uint8_t val);                                      // This is the implementation of write that is inherited from, left as virtual to be implementation specific
+        #if HYPERDISPLAY_USE_PRINT		
+            #if HYPERDISPLAY_INCLUDE_DEFAULT_FONT 			        
+                virtual void getCharInfo(uint8_t val, char_info_t * pchar) = 0;		// A pure virtual function - you must implement this to be able to instantiate an object. The pchar pointer argument points to a valid char_info_t object that the function must fill out with the right values
+            #endif
         #endif
 
         // Mathematical drawing tools
         #if HYPERDISPLAY_USE_MATH
             // Write math functions here
         #endif
-
 };
 
 
