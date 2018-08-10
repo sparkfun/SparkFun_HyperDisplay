@@ -63,6 +63,13 @@ typedef struct window_info{
     color_t data;                   // A pointer to pixel data that is specific to the window. Can be left as NULL
 }wind_info_t;                       // Window infomation structure for placing text on the display
 
+typedef enum{
+    hyperdisplay_dim_ok = 0,
+    hyperdisplay_dim_low,
+    hyperdisplay_dim_high,
+    hyperdisplay_dim_no_val
+}hyperdisplay_dim_check_t;
+
 class hyperdisplay : public Print{
     private:
     protected:
@@ -78,7 +85,7 @@ class hyperdisplay : public Print{
 
         // Utility functions
     	uint16_t getNewColorOffset(uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t numWritten);
-        bool enforceWindowLimits(int32_t * x0, int32_t * y0 = NULL, int32_t * x1 = NULL, int32_t * y1 = NULL);       // Used to ensure that given coordiantes do not exceed the current window's extent
+        hyperdisplay_dim_check_t enforceLimits(int32 * var, bool axisSelect);       
         virtual void setupDefaultWindow( void );                        // User can override this function                                                               // Fills out the default window structure and associates it to the current window 
         void setupHyperDisplay(uint16_t xSize, uint16_t ySize);         // Call this function in the begin() function of the derived class to ensure that all necessary paramters for the hyperdisplay parent class are set correctly
 

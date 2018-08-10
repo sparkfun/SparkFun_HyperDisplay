@@ -221,36 +221,65 @@ void hyperdisplay::fillFromArray(int32_t x0, int32_t y0, int32_t x1, int32_t y1,
 
 void hyperdisplay::pixel(int32_t x0, int32_t y0, color_t color)
 {
-	// Check window coordinate validity
-
+	hyperdisplay_dim_check_t x0c = enforceLimits(&x0, false);				// if the dimension was off-window then it will now be on the edge. 
+	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, true); 
+	if((x0c != hyperdisplay_dim_ok) || (y0c != hyperdisplay_dim_ok))
+	{
+		return;	// Do not print a single pixel at the wrong location ever
+	}
 	hwpixel(x0, y0, color);
 }
 
 void xline(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goLeft = false)
 {
-	// Check window coordinate validity
-
+	int32_t x1;
+	if(goLeft){ x1 = x0 - len; }else{ x1 = x0 + len; }						// Correct for goLeft
+	hyperdisplay_dim_check_t x0c = enforceLimits(&x0, false);				// if the dimension was off-window then it will now be on the edge. 
+	hyperdisplay_dim_check_t x1c = enforceLimits(&x1, false);
+	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, true); 
+	if(y0c != hyperdisplay_dim_ok){ return; }											// Don't do it if y was wrong
+	if((x0c == hyperdisplay_dim_low) && (x1c == hyperdisplay_dim_low)){ return; }		// Don't do it if x0 and x1 were both low (would cause phantom dot at xMin)
+	if((x0c == hyperdisplay_dim_high) && (x1c == hyperdisplay_dim_high)){ return; }		// Don't do it if x0 and x1 were both high (would cause phantom dot at xMax)
 	hwxline(x0, y0, len, data, colorCycleLength, startColorOffset, goLeft);
 }
 
 void yline(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goUp = false)
 {
-	// Check window coordinate validity
-
+	int32_t y1;
+	if(goUp){ y1 = y0 - len; }else{ y1 = y0 + len; }						// Correct for goUp
+	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, true);				// if the dimension was off-window then it will now be on the edge. 
+	hyperdisplay_dim_check_t y1c = enforceLimits(&y1, true);
+	hyperdisplay_dim_check_t x0c = enforceLimits(&x0, false); 
+	if(x0c != hyperdisplay_dim_ok){ return; }											// Don't do it if x was wrong
+	if((y0c == hyperdisplay_dim_low) && (y1c == hyperdisplay_dim_low)){ return; }		// Don't do it if y0 and y1 were both low (would cause phantom dot at yMin)
+	if((y0c == hyperdisplay_dim_high) && (y1c == hyperdisplay_dim_high)){ return; }		// Don't do it if y0 and y1 were both high (would cause phantom dot at yMax)
 	hwyline(x0, y0, len, data, colorCycleLength, startColorOffset, goUp);
 }
 
 void hyperdisplay::rectangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, bool filled = false, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool gradientVertical = false, bool reverseGradient = false)
 {
-	// Check window coordinate validity
-
+	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, true);				// if the dimension was off-window then it will now be on the edge. 
+	hyperdisplay_dim_check_t y1c = enforceLimits(&y1, true);
+	hyperdisplay_dim_check_t x0c = enforceLimits(&x0, false); 
+	hyperdisplay_dim_check_t x1c = enforceLimits(&x1, false);
+	if((y0c == hyperdisplay_dim_low) && (y1c == hyperdisplay_dim_low)){ return; }		// Don't do it if y0 and y1 were both low (would cause phantom dot at yMin)
+	if((y0c == hyperdisplay_dim_high) && (y1c == hyperdisplay_dim_high)){ return; }		// Don't do it if y0 and y1 were both high (would cause phantom dot at yMax)
+	if((x0c == hyperdisplay_dim_low) && (x1c == hyperdisplay_dim_low)){ return; }		// Don't do it if x0 and x1 were both low (would cause phantom dot at xMin)
+	if((x0c == hyperdisplay_dim_high) && (x1c == hyperdisplay_dim_high)){ return; }		// Don't do it if x0 and x1 were both high (would cause phantom dot at xMax)
 	hwrectangle(x0, y0, x1, y1, data, filled, colorCycleLength, startColorOffset, gradientVertical, reverseGradient);
 }
 
 void hyperdisplay::fillFromArray(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t size, color_t data)
 {
 	// Check window coordinate validity
-
+	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, true);				// if the dimension was off-window then it will now be on the edge. 
+	hyperdisplay_dim_check_t y1c = enforceLimits(&y1, true);
+	hyperdisplay_dim_check_t x0c = enforceLimits(&x0, false); 
+	hyperdisplay_dim_check_t x1c = enforceLimits(&x1, false);
+	if(x0c != hyperdisplay_dim_ok){ return; } 					// Return if any dimension was not ok because changing the dimensions could have adverse effects on the array (potential overflow or underflow)
+	if(x1c != hyperdisplay_dim_ok){ return; } 
+	if(y0c != hyperdisplay_dim_ok){ return; } 
+	if(y1c != hyperdisplay_dim_ok){ return; } 
 	hwfillFromArray(x0, y0, x1, y1, size, data);
 }
 
@@ -652,33 +681,25 @@ uint16_t hyperdisplay::getNewColorOffset(uint16_t colorCycleLength, uint16_t sta
 	return ((numWritten+startColorOffset) % colorCycleLength);
 }
 
-bool enforceWindowLimits(int32_t * x0, int32_t * y0, int32_t * x1, int32_t * y1)
+hyperdisplay_dim_check_t enforceLimits(int32 * var, bool axisSelect)
 {
-	// x variables are checked against x extent of the window. 
-	// y variables are checked against y extent of the window.
-	// 0 variables are checked against the minimum dimension.
-	// 1 variables are checked against the maximum dimension.
-	// If you pass something to the wrong location it may not get checked as you need it to
-	bool x0less, y0less, x1less, y1less, x0more, y0more, x1more, y1more;
-
-	if(x0 != NULL){if((*x0) < (pCurrentWindow->xMin)){ x0less = true; }}else{ x0less = false; }
-	if(x1 != NULL){if((*x1) < (pCurrentWindow->xMin)){ x1less = true; }}else{ x1less = false; }
-	if(y0 != NULL){if((*y0) < (pCurrentWindow->yMin)){ y0less = true; }}else{ y0less = false; }
-	if(y1 != NULL){if((*y1) < (pCurrentWindow->yMin)){ y1less = true; }}else{ y1less = false; }
-
-	if(x0 != NULL){if((*x0) > (pCurrentWindow->xMax)){ x0more = true; }}else{ x0more = false; }
-	if(x1 != NULL){if((*x1) > (pCurrentWindow->xMax)){ x1more = true; }}else{ x1more = false; }
-	if(y0 != NULL){if((*y0) > (pCurrentWindow->yMax)){ y0more = true; }}else{ y0more = false; }
-	if(y1 != NULL){if((*y1) > (pCurrentWindow->yMax)){ y1more = true; }}else{ y1more = false; }
-
-	// Check that it is not entirely off-window
-	if((x0less && x1less) || (x0more && x1more)){ return false; }
-	if((y0less && y1less) || (y0more && y1more)){ return false; }
-
-	// Clip any variables as needed
-	if(x0less)
-
-	return pass;
+	bool low = false, high = false;
+	if(var == NULL){ return hyperdisplay_dim_no_val; }
+	if(axisSelect)
+	{
+		// y axis
+		if( *var > (int32_t)pCurrentWindow->yMax ){ high = true; }
+		if( *var < (int32_t)pCurrentWindow->yMin ){ low = true;  }
+	}
+	else
+	{
+		// x axis
+		if( *var > (int32_t)pCurrentWindow->xMax ){ high = true; }
+		if( *var < (int32_t)pCurrentWindow->xMin ){ low = true;  } 
+	}
+	if(high){ return hyperdisplay_dim_high; }
+	if(low ){ return hyperdisplay_dim_low;  }
+	return hyperdisplay_dim_ok;
 }
 
 void hyperdisplay::setupDefaultWindow( void )
