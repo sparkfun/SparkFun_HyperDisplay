@@ -12,7 +12,7 @@ header file: hyperdisplay.h
 wind_info_t hyperdisplayDefaultWindow;		// This window is used by default so that the user does not have to worry about windows if they don't want to
 char_info_t hyperdisplayDefaultCharacter;
 
-// void hyperdisplay::pixel(uint16_t x0, uint16_t y0, color_t color)
+// void hyperdisplay::pixel(int32_t x0, int32_t y0, color_t color)
 // {
 	// TIP: When you implement pixel for a derived class be aware that x0 and y0 are in terms of the current window.
 	// For example if pixel() calls a hardware-specific function hardwarePixel() that draws to the display RAM 
@@ -27,53 +27,91 @@ char_info_t hyperdisplayDefaultCharacter;
 	// Furthermore this principal applies any time that you are overwriting one of the 'primitive' drawing functions.
 // }
 
-void hyperdisplay::xline(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, bool goLeft)
+void hyperdisplay::xline(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, bool goLeft)
 {
 	// Note: color_t data is always a void pointer. You need to make sure that it points at the correct color type with enough elements.
 	// In this case the correct number of elements is colorCycleLength
-	for(uint16_t indi = 0; indi < len; indi++)
+	if(colorCycleLength == 0)
 	{
-		if(goLeft)
+		colorCycleLength = 1;
+	}
+	// if(startColorOffset >= colorCycleLength)
+	// {
+	// 	startColorOffset = colorCycleLength - 1;
+	// }
+
+	color_t value = getOffsetColor(data, startColorOffset);
+
+	if(goLeft)
+	{
+		for(uint16_t indi = 0; indi < len; indi++)
 		{
-			pixel(x0 - indi, y0, getOffsetColor(data, startColorOffset++));
+			pixel(x0 - indi, y0, value);
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
+			value = getOffsetColor(data, startColorOffset);
 		}
-		else
+	}
+	else
+	{
+		// Serial.println("Here3?");
+		for(uint16_t indi = 0; indi < len; indi++)
 		{
-			pixel(x0 + indi, y0, getOffsetColor(data, startColorOffset++));
-		}
-		if(startColorOffset >= colorCycleLength)
-		{
-			startColorOffset = 0;
+			// Serial.println("Here?4");
+
+			Serial.println((uint32_t)value, HEX);
+			// Serial.println("Here?");
+
+			pixel(x0 + indi, y0, value);
+
+			
+
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
+
+			// Serial.println("Here2?");
+			Serial.print("Offset: "); Serial.println(startColorOffset);
+
+			value = getOffsetColor(data, startColorOffset);
 		}
 	}
 	hyperdisplayXLineCallback(x0, y0, len, data, colorCycleLength, startColorOffset, goLeft);
 }
 
-void hyperdisplay::yline(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, bool goUp)
+void hyperdisplay::yline(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, bool goUp)
 {
 	// Note: color_t data is always a void pointer. You need to make sure that it points at the correct color type with enough elements.
 	// In this case the correct number of elements is colorCycleLength
+	if(colorCycleLength == 0)
+	{
+		colorCycleLength = 1;
+	}
+	// if(startColorOffset >= colorCycleLength)
+	// {
+	// 	startColorOffset = colorCycleLength - 1;
+	// }
+
+	color_t value = getOffsetColor(data, startColorOffset);
 
 	for(uint16_t indi = 0; indi < len; indi++)
 	{
 		if(goUp)
 		{
-			pixel(x0, y0 - indi, getOffsetColor(data, startColorOffset++));
+			pixel(x0, y0 - indi, value);
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
+			value = getOffsetColor(data, startColorOffset);
 		}
 		else
 		{
-			pixel(x0, y0 + indi, getOffsetColor(data, startColorOffset++));
-		}
-		if(startColorOffset >= colorCycleLength)
-		{
-			startColorOffset = 0;
+			pixel(x0, y0 + indi, value);
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
+			value = getOffsetColor(data, startColorOffset);
 		}
 	}
 	hyperdisplayYLineCallback(x0, y0, len, data, colorCycleLength, startColorOffset, goUp);
 }
 
-void hyperdisplay::rectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, bool filled, uint16_t colorCycleLength, uint16_t startColorOffset, bool gradientVertical, bool reverseGradient)
+void hyperdisplay::rectangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, bool filled, uint16_t colorCycleLength, uint16_t startColorOffset, bool gradientVertical, bool reverseGradient)
 {
+	// xline(x0, y0, x1-x0+1, data, colorCycleLength, startColorOffset, reverseGradient);
 	if(x0 > x1)
 	{ 
 		SWAP_COORDS(x0, x1);
@@ -84,12 +122,12 @@ void hyperdisplay::rectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
 		SWAP_COORDS(y0, y1);
 	}
 
-	uint16_t xlen = x1 - x0;
+	uint16_t xlen = x1 - x0 + 1;
 	if(filled)
 	{
 		if(gradientVertical)
 		{
-			for(uint16_t y = y0; y < y1; y++)
+			for(uint16_t y = y0; y <= y1; y++)
 			{
 				color_t value = getOffsetColor(data, startColorOffset);
 				xline(x0, y, xlen, value, 1, reverseGradient);
@@ -98,7 +136,7 @@ void hyperdisplay::rectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
 		}
 		else
 		{
-			for(uint16_t y = y0; y < y1; y++)
+			for(uint16_t y = y0; y <= y1; y++)
 			{
 				xline(x0, y, xlen, data, colorCycleLength, startColorOffset, reverseGradient);
 			}
@@ -106,30 +144,40 @@ void hyperdisplay::rectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
 	}
 	else
 	{
-		uint16_t ylen = y1 - y0;
+		uint16_t ylen = y1 - y0 + 1;
 		color_t value = getOffsetColor(data, startColorOffset);
+
+		Serial.print("StartOffset: "); Serial.println(startColorOffset);
 
 		xline(x0, y0, xlen, value, colorCycleLength, startColorOffset, reverseGradient);
 		startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, xlen);
 		value = getOffsetColor(data, startColorOffset);
 
+		Serial.print("StartOffset: "); Serial.println(startColorOffset);
+
 		yline(x1, y0, ylen, value, colorCycleLength, startColorOffset, reverseGradient);
 		startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, ylen);
 		value = getOffsetColor(data, startColorOffset);
+
+		Serial.print("StartOffset: "); Serial.println(startColorOffset);
 
 		xline(x1, y1, xlen, value, colorCycleLength, startColorOffset, !reverseGradient);
 		startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, xlen);
 		value = getOffsetColor(data, startColorOffset);
 
+		Serial.print("StartOffset: "); Serial.println(startColorOffset);
+
 		yline(x0, y1, ylen, value, colorCycleLength, startColorOffset, !reverseGradient);
 		startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, ylen);
 		value = getOffsetColor(data, startColorOffset);
+
+		Serial.print("StartOffset: "); Serial.println(startColorOffset);
 		
 	}
 	hyperdisplayRectangleCallback(x0, y0, x1, y1, data, filled, colorCycleLength, startColorOffset, gradientVertical, reverseGradient);
 }
 
-void hyperdisplay::fillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t numPixels, color_t data)
+void hyperdisplay::fillFromArray(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t numPixels, color_t data)
 {
 	if(x0 > x1)
 	{ 
@@ -224,7 +272,7 @@ void hyperdisplay::fillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t
 
 
 
-void hyperdisplay::line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width, bool reverseGradient)
+void hyperdisplay::line(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width, bool reverseGradient)
 {
 	uint16_t absY, absX;
 
@@ -258,7 +306,7 @@ void hyperdisplay::line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, colo
 	}
 }
 
-void hyperdisplay::polygon(uint16_t x[], uint16_t y[], uint8_t numSides, color_t color, uint16_t width)
+void hyperdisplay::polygon(int32_t x[], int32_t y[], uint8_t numSides, color_t color, uint16_t width)
 {
 	uint8_t indi = 0;
 	for(indi = 0; indi < numSides-1; indi++)
@@ -271,7 +319,7 @@ void hyperdisplay::polygon(uint16_t x[], uint16_t y[], uint8_t numSides, color_t
 	}
 }
 
-void hyperdisplay::circle(uint16_t x0, uint16_t y0, uint16_t radius, color_t color, bool filled)
+void hyperdisplay::circle(int32_t x0, int32_t y0, uint16_t radius, color_t color, bool filled)
 {
 	if(radius < 2)
 	{
@@ -306,7 +354,7 @@ void hyperdisplay::fillWindow(color_t color)
 
 
 // Protected drawing functions
-void hyperdisplay::lineHigh(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width, bool reverseGradient)
+void hyperdisplay::lineHigh(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width, bool reverseGradient)
 {
 	// Note: color_t color is always a void pointer. You need to make sure that it points at the correct color type with enough elements.
 	// In this case the correct number of elements is colorCycleLength
@@ -347,7 +395,7 @@ void hyperdisplay::lineHigh(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, 
 	}
 }
     	
-void hyperdisplay::lineLow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width, bool reverseGradient)
+void hyperdisplay::lineLow(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width, bool reverseGradient)
 {
 	// Note: color_t color is always a void pointer. You need to make sure that it points at the correct color type with enough elements.
 	// In this case the correct number of elements is colorCycleLength
@@ -385,7 +433,7 @@ void hyperdisplay::lineLow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, c
 	}
 }
 
-void hyperdisplay::circle_Bresenham(uint16_t x0, uint16_t y0, uint16_t radius, color_t color, bool fill)
+void hyperdisplay::circle_Bresenham(int32_t x0, int32_t y0, uint16_t radius, color_t color, bool fill)
 {
 	// Thanks to the tutorial here: https://www.geeksforgeeks.org/bresenhams-circle-drawing-algorithm/
 	uint8_t dx = 0;
@@ -519,15 +567,7 @@ void hyperdisplay::circle_eight(uint8_t x0, uint8_t y0, int16_t dx, int16_t dy, 
 
 uint16_t hyperdisplay::getNewColorOffset(uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t numWritten)
 {
-	uint16_t remainder = (numWritten % colorCycleLength);
-	if(remainder < startColorOffset)
-	{
-		return (remainder + colorCycleLength) - startColorOffset; 
-	}
-	else
-	{
-		return (remainder) - startColorOffset; 
-	}
+	return ((numWritten+startColorOffset) % colorCycleLength);
 }
 
 void hyperdisplay::setupDefaultWindow( void )
@@ -560,7 +600,7 @@ void hyperdisplay::setupHyperDisplay(uint16_t xSize, uint16_t ySize)
 
 
 // Callbacks default (blank) implementation
-void hyperdisplayXLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t color, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width){}
-void hyperdisplayYLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t color, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width){}
-void hyperdisplayRectangleCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, bool filled, uint16_t colorCycleLength, uint16_t startColorOffset, bool gradientVertical, bool reverseGradient){}
-void hyperdisplayFillFromArrayCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t size, color_t data){}
+void hyperdisplayXLineCallback(int32_t x0, int32_t y0, uint16_t len, color_t color, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width){}
+void hyperdisplayYLineCallback(int32_t x0, int32_t y0, uint16_t len, color_t color, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width){}
+void hyperdisplayRectangleCallback(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, bool filled, uint16_t colorCycleLength, uint16_t startColorOffset, bool gradientVertical, bool reverseGradient){}
+void hyperdisplayFillFromArrayCallback(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t size, color_t data){}

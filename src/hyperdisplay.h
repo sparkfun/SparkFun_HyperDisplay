@@ -34,9 +34,9 @@ typedef void * color_t;
 
 typedef struct character_info{
 	color_t  data;		    // The data that is used to fill the character frame
-	uint32_t numPixels;		// The number of color_t types that pdata points to
-	uint16_t xDim;			// Number of pixels in x dimension for rectilinear characters
-	uint16_t yDim;			// Number of pixels in y dimension for rectilinear characters
+	uint16_t * xLoc;		// x location data relative to the upper left-corner of the character area
+	uint16_t * yLoc;		// y location data relative to the upper left-corner of the character area
+    uint32_t numPixels;     // The number of color_t types that pdata points to
 	bool show;				// Whether or not to actually show the character
 	bool causedNewline;		// Whether or not the character triggered a new line
 }char_info_t;				// Character information structure for placing pixels in a window
@@ -58,10 +58,12 @@ class hyperdisplay : public Print{
     private:
     protected:
 
+        public: // temporary!
+
     	// Some protected drawing functions - not to be used directly
-    	void lineHigh(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width, bool reverseGradient);
-    	void lineLow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width, bool reverseGradient);
-    	void circle_Bresenham(uint16_t x0, uint16_t y0, uint16_t radius, color_t color, bool fill);
+    	void lineHigh(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width, bool reverseGradient);
+    	void lineLow(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width, bool reverseGradient);
+    	void circle_Bresenham(int32_t x0, int32_t y0, uint16_t radius, color_t color, bool fill);
 		void circle_midpoint(uint8_t x0, uint8_t y0, uint8_t radius, color_t color, bool fill);
 		void circle_eight(uint8_t xc, uint8_t yc, int16_t dx, int16_t dy, color_t color, bool fill);
 
@@ -83,16 +85,16 @@ class hyperdisplay : public Print{
         virtual color_t getOffsetColor(color_t base, uint32_t numPixels) = 0;  // This pure virtual function is required to get the correct pointer after incrementing by a number of pixels (which could have any amount of data behind them)
 
         // 'primitive' drawing functions - coordinates are with respect to the current window
-        virtual void pixel(uint16_t x0, uint16_t y0, color_t color) = 0; // Made a pure virtual function so that derived classes are forced to implement the pixel function
-        virtual void xline(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goLeft = false); // Default implementation using individual pixels so that user CAN add just a way to write to a pixel,  but highly reccommend optimizing
-        virtual void yline(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goUp = false); //^
-        virtual void rectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, bool filled = false, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool gradientVertical = false, bool reverseGradient = false); 
-        virtual void fillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t size, color_t data); 
+        virtual void pixel(int32_t x0, int32_t y0, color_t color) = 0; // Made a pure virtual function so that derived classes are forced to implement the pixel function
+        virtual void xline(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goLeft = false); // Default implementation using individual pixels so that user CAN add just a way to write to a pixel,  but highly reccommend optimizing
+        virtual void yline(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goUp = false); //^
+        virtual void rectangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, bool filled = false, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool gradientVertical = false, bool reverseGradient = false); 
+        virtual void fillFromArray(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t size, color_t data); 
 
         // These use the 'primitive' functions and are available to users - coordinates are with respect to the current window
-        void line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, uint16_t width = 1, bool reverseGradient = false); 
-        void polygon(uint16_t x[], uint16_t y[], uint8_t numSides, color_t color, uint16_t width = 1);
-        void circle(uint16_t x0, uint16_t y0, uint16_t radius, color_t color, bool filled = false); // Fills the entire current window
+        void line(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, uint16_t width = 1, bool reverseGradient = false); 
+        void polygon(int32_t x[], int32_t y[], uint8_t numSides, color_t color, uint16_t width = 1);
+        void circle(int32_t x0, int32_t y0, uint16_t radius, color_t color, bool filled = false); // Fills the entire current window
         void fillWindow(color_t color);
     
         // Printing
@@ -117,10 +119,10 @@ class hyperdisplay : public Print{
 // Note that the pure virtual function pixel() does not have a callback - if it is needed it should be included in the derived class,
 // and that if the user provides implementation specific versions of the other primitive functions then these callbacks will not be
 // called, so if the functionality is desired it can be re-implemented.
-void hyperdisplayXLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goLeft = false)                                                                                 __attribute__ ((weak));
-void hyperdisplayYLineCallback(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goUp = false) 	                                                                                __attribute__ ((weak));
-void hyperdisplayRectangleCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, bool filled = false, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool gradientVertical = false, bool reverseGradient = false)    __attribute__ ((weak));
-void hyperdisplayFillFromArrayCallback(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t numPixels, color_t data)                                                                                                                            __attribute__ ((weak));
+void hyperdisplayXLineCallback(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goLeft = false)                                                                                 __attribute__ ((weak));
+void hyperdisplayYLineCallback(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goUp = false) 	                                                                                __attribute__ ((weak));
+void hyperdisplayRectangleCallback(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, bool filled = false, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool gradientVertical = false, bool reverseGradient = false)    __attribute__ ((weak));
+void hyperdisplayFillFromArrayCallback(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t numPixels, color_t data)                                                                                                                            __attribute__ ((weak));
 
 #endif /* HYPERDISPLAY_H */
 
