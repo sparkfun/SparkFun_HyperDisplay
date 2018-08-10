@@ -38,7 +38,7 @@ typedef struct character_info{
 	uint16_t * yLoc;		// y location data relative to the upper left-corner of the character area
     uint32_t numPixels;     // The number of color_t types that pdata points to
 	bool show;				// Whether or not to actually show the character
-	bool causedNewline;		// Whether or not the character triggered a new line
+	bool causedNewline;		// Whether or not the character triggered a new line  - only set true if you want there to be a new line. Otherwise library handles it
 }char_info_t;				// Character information structure for placing pixels in a window
 
 typedef struct window_info{
