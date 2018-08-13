@@ -97,7 +97,7 @@ void hyperdisplay::hwyline(uint16_t x0, uint16_t y0, uint16_t len, color_t data,
 	hyperdisplayYLineCallback(x0, y0, len, data, colorCycleLength, startColorOffset, goUp);
 }
 
-void hyperdisplay::hwrectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, bool filled, uint16_t colorCycleLength, uint16_t startColorOffset, bool gradientVertical, bool reverseGradient)
+void hyperdisplay::hwrectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, bool filled, uint16_t colorCycleLength, uint16_t startColorOffset, bool reverseGradient, bool gradientVertical)
 {
 	if(x0 > x1)
 	{ 
@@ -110,7 +110,6 @@ void hyperdisplay::hwrectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y
 	}
 
 	startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 0);	// This line is needed to condition the user's input start color offset
-	color_t value = getOffsetColor(data, startColorOffset);
 
 	uint16_t xlen = x1 - x0 + 1;
 	if(filled)
@@ -119,8 +118,7 @@ void hyperdisplay::hwrectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y
 		{
 			for(uint16_t y = y0; y <= y1; y++)
 			{
-				color_t value = getOffsetColor(data, startColorOffset);
-				hwxline(x0, y, xlen, value, 1, 0, reverseGradient);
+				hwxline(x0, y, xlen, data, 1, startColorOffset, reverseGradient);
 				startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
 			}
 		}
@@ -128,41 +126,31 @@ void hyperdisplay::hwrectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y
 		{
 			for(uint16_t y = y0; y <= y1; y++)
 			{
-				hwxline(x0, y, xlen, value, colorCycleLength, startColorOffset, reverseGradient);
+				hwxline(x0, y, xlen, data, colorCycleLength, startColorOffset, reverseGradient);
 			}
 		}
 	}
 	else
 	{
 		uint16_t ylen = y1 - y0 + 1;
-		color_t value = getOffsetColor(data, startColorOffset);
 
-		Serial.print("StartOffset: "); Serial.println(startColorOffset);
+		hwxline(x0, y0, xlen-5, data, colorCycleLength, startColorOffset, reverseGradient);
 
-		hwxline(x0, y0, xlen, value, colorCycleLength, startColorOffset, reverseGradient);
-		startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, xlen);
-		value = getOffsetColor(data, startColorOffset);
+		startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 2);
+		// value = getOffsetColor(data, startColorOffset);
+		hwyline(x1, y0, ylen-5, data, colorCycleLength, startColorOffset, reverseGradient);
 
-		Serial.print("StartOffset: "); Serial.println(startColorOffset);
-
-		hwyline(x1, y0, ylen, value, colorCycleLength, startColorOffset, reverseGradient);
 		startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, ylen);
-		value = getOffsetColor(data, startColorOffset);
+		// value = getOffsetColor(data, startColorOffset);
+		hwxline(x1, y1, xlen-5, data, colorCycleLength, startColorOffset, !reverseGradient);
 
-		Serial.print("StartOffset: "); Serial.println(startColorOffset);
-
-		hwxline(x1, y1, xlen, value, colorCycleLength, startColorOffset, !reverseGradient);
 		startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, xlen);
-		value = getOffsetColor(data, startColorOffset);
+		// value = getOffsetColor(data, startColorOffset);
+		hwyline(x0, y1, ylen-10, data, colorCycleLength, startColorOffset, !reverseGradient);
 
-		Serial.print("StartOffset: "); Serial.println(startColorOffset);
+		// startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, ylen);
+		// value = getOffsetColor(data, startColorOffset);
 
-		hwyline(x0, y1, ylen, value, colorCycleLength, startColorOffset, !reverseGradient);
-		startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, ylen);
-		value = getOffsetColor(data, startColorOffset);
-
-		Serial.print("StartOffset: "); Serial.println(startColorOffset);
-		
 	}
 	hyperdisplayRectangleCallback(x0, y0, x1, y1, data, filled, colorCycleLength, startColorOffset, gradientVertical, reverseGradient);
 }
