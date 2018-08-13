@@ -347,9 +347,11 @@ void hyperdisplay::fillFromArray(int32_t x0, int32_t y0, int32_t x1, int32_t y1,
 
 
 
-void hyperdisplay::line(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width, bool reverseGradient)
+void hyperdisplay::line(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t width, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, bool reverseGradient)
 {
 	uint16_t absY, absX;
+
+	startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 0);	// This line is needed to condition the user's input start color offset
 
 	if(y1 > y0){ absY = y1 - y0; }
 	else{ absY = y0 - y1; }
@@ -361,49 +363,51 @@ void hyperdisplay::line(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t 
   	{
 	    if( x0 > x1 )
 	    {
-	      	lineLow(x1, y1, x0, y0, data, 1, 0, width, reverseGradient);
+	      	lineLow(x1, y1, x0, y0, width, data, colorCycleLength, startColorOffset, reverseGradient);
 	    }
 	    else
 	    {
-	      	lineLow(x0, y0, x1, y1, data, 1, 0, width, reverseGradient);
+	      	lineLow(x0, y0, x1, y1, width, data, colorCycleLength, startColorOffset, reverseGradient);
 	    }
 	}
   	else
 	{
     	if( y0 > y1 )
       	{
-      		lineHigh(x1, y1, x0, y0, data, 1, 0, width, reverseGradient);
+      		Serial.print("Here");
+      		lineHigh(x1, y1, x0, y0, width, data, colorCycleLength, startColorOffset, reverseGradient);
       	}
     	else
     	{
-      		lineHigh(x0, y0, x1, y1, data, 1, 0, width, reverseGradient);
+    		Serial.print("Here2");
+      		lineHigh(x0, y0, x1, y1, width, data, colorCycleLength, startColorOffset, reverseGradient);
   		}
 	}
 }
 
-void hyperdisplay::polygon(int32_t x[], int32_t y[], uint8_t numSides, color_t color, uint16_t width)
+void hyperdisplay::polygon(int32_t x[], int32_t y[], uint8_t numSides, uint16_t width, color_t color)
 {
-	uint8_t indi = 0;
-	for(indi = 0; indi < numSides-1; indi++)
-	{
-		line(*(x+indi), *(y+indi), *(x+indi+1), *(y+indi+1), &color , width);
-	}
-	if(numSides > 1)
-	{
-		line(*(x+indi), *(y+indi), *(x), *(y), &color , width);
-	}
+	// uint8_t indi = 0;
+	// for(indi = 0; indi < numSides-1; indi++)
+	// {
+	// 	line(*(x+indi), *(y+indi), *(x+indi+1), *(y+indi+1), &color , width);
+	// }
+	// if(numSides > 1)
+	// {
+	// 	line(*(x+indi), *(y+indi), *(x), *(y), &color , width);
+	// }
 }
 
 void hyperdisplay::circle(int32_t x0, int32_t y0, uint16_t radius, color_t color, bool filled)
 {
-	if(radius < 2)
-	{
-		circle_Bresenham(x0, y0, radius, color, filled);
-	}
-	else
-	{
-		circle_midpoint(x0, y0, radius, color, filled);
-	}
+	// if(radius < 2)
+	// {
+	// 	circle_Bresenham(x0, y0, radius, color, filled);
+	// }
+	// else
+	// {
+	// 	circle_midpoint(x0, y0, radius, color, filled);
+	// }
 }
 
 void hyperdisplay::fillWindow(color_t color)
@@ -439,7 +443,7 @@ void hyperdisplay::fillWindow(color_t color)
 
 
 // Protected drawing functions
-void hyperdisplay::lineHigh(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width, bool reverseGradient)
+void hyperdisplay::lineHigh(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t width, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, bool reverseGradient)
 {
 	// Note: color_t color is always a void pointer. You need to make sure that it points at the correct color type with enough elements.
 	// In this case the correct number of elements is colorCycleLength
@@ -450,9 +454,7 @@ void hyperdisplay::lineHigh(int32_t x0, int32_t y0, int32_t x1, int32_t y1, colo
 		shift = 1;
 	}
 
-
 	uint16_t dy = y1 - y0;	// Guaranteed positive
-
   	int32_t dx = x1 - x0;
 	int8_t xi = 1;
 
@@ -468,9 +470,17 @@ void hyperdisplay::lineHigh(int32_t x0, int32_t y0, int32_t x1, int32_t y1, colo
 
 	for(uint8_t y = y0; y < y1; y++)
 	{
+		consecutive++;
 		if( D > 0 )
 		{
-			rectangle(x-shift-halfWidth, y-consecutive+1, x+halfWidth, y, data, true, colorCycleLength, startColorOffset, true, reverseGradient); 
+			if(width == 1)
+			{
+				hwyline(x, y-consecutive+1, consecutive, data, colorCycleLength, startColorOffset, false);
+			}
+			else
+			{
+				rectangle(x+shift-halfWidth, y-consecutive+1, x+halfWidth, y, data, true, colorCycleLength, startColorOffset, true, reverseGradient); 
+			}
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, consecutive);
 
 			consecutive = 0;
@@ -479,11 +489,10 @@ void hyperdisplay::lineHigh(int32_t x0, int32_t y0, int32_t x1, int32_t y1, colo
 		   	D = D - 2*dy;		
 		}
 		D = D + 2*dx;
-		consecutive++;
 	}
 }
     	
-void hyperdisplay::lineLow(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t width, bool reverseGradient)
+void hyperdisplay::lineLow(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t width, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, bool reverseGradient)
 {
 	// Note: color_t color is always a void pointer. You need to make sure that it points at the correct color type with enough elements.
 	// In this case the correct number of elements is colorCycleLength
@@ -511,6 +520,16 @@ void hyperdisplay::lineLow(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color
 	{
 		if( D > 0 )
 		{
+			if(width == 1)
+			{
+				hwyline(x, y-consecutive+1, consecutive, data, colorCycleLength, startColorOffset, false);
+			}
+			else
+			{
+				rectangle(x+shift-halfWidth, y-consecutive+1, x+halfWidth, y, data, true, colorCycleLength, startColorOffset, true, reverseGradient); 
+			}
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, consecutive);
+
 			rectangle(x-consecutive+1, y-shift-halfWidth, x, y+halfWidth, data, true, colorCycleLength, startColorOffset, true, reverseGradient); 
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, consecutive);
 
