@@ -18,7 +18,7 @@ char_info_t hyperdisplayDefaultCharacter;
 		uint16_t hyperdisplayDefaultYloc[HYPERDISPLAY_DEFAULT_FONT_WIDTH*HYPERDISPLAY_DEFAULT_FONT_HEIGHT];
 	#endif
 #endif
-// void hyperdisplay::hwpixel(int32_t x0, int32_t y0, color_t color)
+// void hyperdisplay::hwpixel(int32_t x0, int32_t y0, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset)
 // {
 	// TIP: When you implement pixel for a derived class be aware that x0 and y0 are in terms of the current window.
 	// For example if pixel() calls a hardware-specific function hardwarePixel() that draws to the display RAM 
@@ -37,45 +37,26 @@ void hyperdisplay::hwxline(uint16_t x0, uint16_t y0, uint16_t len, color_t data,
 {
 	// Note: color_t data is always a void pointer. You need to make sure that it points at the correct color type with enough elements.
 	// In this case the correct number of elements is colorCycleLength
-	if(colorCycleLength == 0)
-	{
-		colorCycleLength = 1;
-	}
-	// if(startColorOffset >= colorCycleLength)
-	// {
-	// 	startColorOffset = colorCycleLength - 1;
-	// }
+	if(colorCycleLength == 0){ colorCycleLength = 1; } // This is just a simple guard
 
+	startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 0);	// This line is needed to condition the user's input start color offset
 	color_t value = getOffsetColor(data, startColorOffset);
 
 	if(goLeft)
 	{
 		for(uint16_t indi = 0; indi < len; indi++)
 		{
-			hwpixel(x0 - indi, y0, value);
+			hwpixel(x0 - indi, y0, value, 1, 0);
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
 			value = getOffsetColor(data, startColorOffset);
 		}
 	}
 	else
 	{
-		// Serial.println("Here3?");
 		for(uint16_t indi = 0; indi < len; indi++)
 		{
-			// Serial.println("Here?4");
-
-			Serial.println((uint32_t)value, HEX);
-			// Serial.println("Here?");
-
-			hwpixel(x0 + indi, y0, value);
-
-			
-
+			hwpixel(x0 + indi, y0, value, 1, 0);
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
-
-			// Serial.println("Here2?");
-			Serial.print("Offset: "); Serial.println(startColorOffset);
-
 			value = getOffsetColor(data, startColorOffset);
 		}
 	}
@@ -95,19 +76,20 @@ void hyperdisplay::hwyline(uint16_t x0, uint16_t y0, uint16_t len, color_t data,
 	// 	startColorOffset = colorCycleLength - 1;
 	// }
 
+	startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 0);	// This line is needed to condition the user's input start color offset
 	color_t value = getOffsetColor(data, startColorOffset);
 
 	for(uint16_t indi = 0; indi < len; indi++)
 	{
 		if(goUp)
 		{
-			hwpixel(x0, y0 - indi, value);
+			hwpixel(x0, y0 - indi, value, 1, 0);
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
 			value = getOffsetColor(data, startColorOffset);
 		}
 		else
 		{
-			hwpixel(x0, y0 + indi, value);
+			hwpixel(x0, y0 + indi, value, 1, 0);
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
 			value = getOffsetColor(data, startColorOffset);
 		}
@@ -127,6 +109,9 @@ void hyperdisplay::hwrectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y
 		SWAP_COORDS(y0, y1);
 	}
 
+	startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 0);	// This line is needed to condition the user's input start color offset
+	color_t value = getOffsetColor(data, startColorOffset);
+
 	uint16_t xlen = x1 - x0 + 1;
 	if(filled)
 	{
@@ -135,7 +120,7 @@ void hyperdisplay::hwrectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y
 			for(uint16_t y = y0; y <= y1; y++)
 			{
 				color_t value = getOffsetColor(data, startColorOffset);
-				hwxline(x0, y, xlen, value, 1, reverseGradient);
+				hwxline(x0, y, xlen, value, 1, 0, reverseGradient);
 				startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
 			}
 		}
@@ -143,7 +128,7 @@ void hyperdisplay::hwrectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y
 		{
 			for(uint16_t y = y0; y <= y1; y++)
 			{
-				hwxline(x0, y, xlen, data, colorCycleLength, startColorOffset, reverseGradient);
+				hwxline(x0, y, xlen, value, colorCycleLength, startColorOffset, reverseGradient);
 			}
 		}
 	}
@@ -218,7 +203,7 @@ void hyperdisplay::hwfillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16
 
 
 
-void hyperdisplay::pixel(int32_t x0, int32_t y0, color_t color)
+void hyperdisplay::pixel(int32_t x0, int32_t y0, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset)
 {
 	hyperdisplay_dim_check_t x0c = enforceLimits(&x0, false);				// if the dimension was off-window then it will now be on the edge. 
 	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, true); 
@@ -227,7 +212,7 @@ void hyperdisplay::pixel(int32_t x0, int32_t y0, color_t color)
 		Serial.println("failed pixel check");
 		return;	// Do not print a single pixel at the wrong location ever
 	}
-	hwpixel(x0, y0, color);
+	hwpixel(x0, y0, data, colorCycleLength, startColorOffset);
 }
 
 void hyperdisplay::xline(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, bool goLeft)
@@ -500,10 +485,13 @@ void hyperdisplay::lineHigh(int32_t x0, int32_t y0, int32_t x1, int32_t y1, colo
 			rectangle(x-shift-halfWidth, y-consecutive, x+halfWidth, y, data, true, colorCycleLength, startColorOffset, true, reverseGradient); 
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, consecutive);
 
+			consecutive = 0;
+
 		   	x = x + xi;
 		   	D = D - 2*dy;
 		}
 		D = D + 2*dx;
+		consecutive++;
 	}
 }
     	
@@ -538,10 +526,13 @@ void hyperdisplay::lineLow(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color
 			rectangle(x-consecutive, y-shift-halfWidth, x, y+halfWidth, data, true, colorCycleLength, startColorOffset, true, reverseGradient); 
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, consecutive);
 
+			consecutive = 0;
+
 		   	y = y + yi;
 		   	D = D - 2*dx;
 		}
 		D = D + 2*dy;
+		consecutive++;
 	}
 }
 
