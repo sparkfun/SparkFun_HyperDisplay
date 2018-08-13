@@ -425,11 +425,11 @@ void hyperdisplay::circle(int32_t x0, int32_t y0, uint16_t radius, color_t color
 {
 	if(radius < 2)
 	{
-		circle_Bresenham(x0, y0, radius, color, false);
+		circle_Bresenham(x0, y0, radius, color, filled);
 	}
 	else
 	{
-		circle_midpoint(x0, y0, radius, color, false);
+		circle_midpoint(x0, y0, radius, color, filled);
 	}
 }
 
