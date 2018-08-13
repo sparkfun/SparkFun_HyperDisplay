@@ -85,7 +85,7 @@ class hyperdisplay : public Print{
 
         // Utility functions
     	uint16_t getNewColorOffset(uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t numWritten);
-        hyperdisplay_dim_check_t enforceLimits(int32 * var, bool axisSelect);       
+        hyperdisplay_dim_check_t enforceLimits(int32_t * var, bool axisSelect);       
         virtual void setupDefaultWindow( void );                        // User can override this function                                                               // Fills out the default window structure and associates it to the current window 
         void setupHyperDisplay(uint16_t xSize, uint16_t ySize);         // Call this function in the begin() function of the derived class to ensure that all necessary paramters for the hyperdisplay parent class are set correctly
 
@@ -97,7 +97,7 @@ class hyperdisplay : public Print{
         virtual void hwxline(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goLeft = false); // Default implementation using individual pixels so that user CAN add just a way to write to a pixel,  but highly reccommend optimizing
         virtual void hwyline(uint16_t x0, uint16_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goUp = false); //^
         virtual void hwrectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, bool filled = false, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool gradientVertical = false, bool reverseGradient = false); 
-        virtual void hwfillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t size, color_t data);
+        virtual void hwfillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint32_t numPixels, color_t data);
 
     public:
     // Parameters
@@ -110,7 +110,7 @@ class hyperdisplay : public Print{
         void xline(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goLeft = false); 
         void yline(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goUp = false);
         void rectangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, bool filled = false, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool gradientVertical = false, bool reverseGradient = false); 
-        void fillFromArray(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t size, color_t data); 
+        void fillFromArray(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t numPixels, color_t data); 
 
         // These use the 'primitive' functions and are available to users - coordinates are with respect to the current window
         void line(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, uint16_t width = 1, bool reverseGradient = false); 

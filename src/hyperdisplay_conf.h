@@ -29,7 +29,7 @@ USE_PRINT:
 
 /*
 INCLUDE_DEFAULT_FONT
-0 - don't include the defualt 5x7 program memory font (to save on program space)
+0 - don't include the default 5x7 program memory font (to save on program space)
 1 - do include the default 5x7 program memory font (to NOT save on program space)
 */
 #define HYPERDISPLAY_INCLUDE_DEFAULT_FONT 1
