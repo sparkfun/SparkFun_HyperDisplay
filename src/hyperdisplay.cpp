@@ -99,15 +99,8 @@ void hyperdisplay::hwyline(uint16_t x0, uint16_t y0, uint16_t len, color_t data,
 
 void hyperdisplay::hwrectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, bool filled, uint16_t colorCycleLength, uint16_t startColorOffset, bool reverseGradient, bool gradientVertical)
 {
-	if(x0 > x1)
-	{ 
-		SWAP_COORDS(x0, x1);
-	}
-	
-	if(y0 > y1)
-	{ 
-		SWAP_COORDS(y0, y1);
-	}
+	if(x0 > x1){ SWAP_COORDS(x0, x1); }
+	if(y0 > y1){ SWAP_COORDS(y0, y1); }
 
 	startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 0);	// This line is needed to condition the user's input start color offset
 
@@ -491,13 +484,14 @@ void hyperdisplay::lineHigh(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint
 		consecutive++;
 		if( D > 0 )
 		{
+
 			if(width == 1)
 			{
-				hwyline(x, y-consecutive+1, consecutive, data, colorCycleLength, startColorOffset, false);
+				yline(x, y-consecutive+1, consecutive, data, colorCycleLength, startColorOffset, false);
 			}
 			else
 			{
-				rectangle(x+shift-halfWidth, y-consecutive+1, x+halfWidth, y, data, true, colorCycleLength, startColorOffset, true, reverseGradient); 
+				rectangle(x+shift-halfWidth, y-consecutive+1, x+halfWidth, y, data, true, colorCycleLength, startColorOffset, reverseGradient, true); 
 			}
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, consecutive);
 
@@ -536,19 +530,17 @@ void hyperdisplay::lineLow(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint1
 
 	for(uint8_t x = x0; x < x1; x++)
 	{
+		consecutive++;
 		if( D > 0 )
 		{
 			if(width == 1)
 			{
-				hwyline(x, y-consecutive+1, consecutive, data, colorCycleLength, startColorOffset, false);
+				xline(x-consecutive+1, y, consecutive, data, colorCycleLength, startColorOffset, false);
 			}
 			else
 			{
-				rectangle(x+shift-halfWidth, y-consecutive+1, x+halfWidth, y, data, true, colorCycleLength, startColorOffset, true, reverseGradient); 
+				rectangle(x-consecutive+1, y+shift-halfWidth, x, y+halfWidth, data, true, colorCycleLength, startColorOffset, reverseGradient, false); 
 			}
-			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, consecutive);
-
-			rectangle(x-consecutive+1, y-shift-halfWidth, x, y+halfWidth, data, true, colorCycleLength, startColorOffset, true, reverseGradient); 
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, consecutive);
 
 			consecutive = 0;
@@ -557,7 +549,6 @@ void hyperdisplay::lineLow(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint1
 		   	D = D - 2*dx;
 		}
 		D = D + 2*dy;
-		consecutive++;
 	}
 }
 
