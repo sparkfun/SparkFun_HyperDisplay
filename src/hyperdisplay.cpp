@@ -18,7 +18,7 @@ char_info_t hyperdisplayDefaultCharacter;
 		uint16_t hyperdisplayDefaultYloc[HYPERDISPLAY_DEFAULT_FONT_WIDTH*HYPERDISPLAY_DEFAULT_FONT_HEIGHT];
 	#endif
 #endif
-// void hyperdisplay::pixel(int32_t x0, int32_t y0, color_t color)
+// void hyperdisplay::hwpixel(int32_t x0, int32_t y0, color_t color)
 // {
 	// TIP: When you implement pixel for a derived class be aware that x0 and y0 are in terms of the current window.
 	// For example if pixel() calls a hardware-specific function hardwarePixel() that draws to the display RAM 
@@ -52,7 +52,7 @@ void hyperdisplay::hwxline(uint16_t x0, uint16_t y0, uint16_t len, color_t data,
 	{
 		for(uint16_t indi = 0; indi < len; indi++)
 		{
-			pixel(x0 - indi, y0, value);
+			hwpixel(x0 - indi, y0, value);
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
 			value = getOffsetColor(data, startColorOffset);
 		}
@@ -67,7 +67,7 @@ void hyperdisplay::hwxline(uint16_t x0, uint16_t y0, uint16_t len, color_t data,
 			Serial.println((uint32_t)value, HEX);
 			// Serial.println("Here?");
 
-			pixel(x0 + indi, y0, value);
+			hwpixel(x0 + indi, y0, value);
 
 			
 
@@ -101,13 +101,13 @@ void hyperdisplay::hwyline(uint16_t x0, uint16_t y0, uint16_t len, color_t data,
 	{
 		if(goUp)
 		{
-			pixel(x0, y0 - indi, value);
+			hwpixel(x0, y0 - indi, value);
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
 			value = getOffsetColor(data, startColorOffset);
 		}
 		else
 		{
-			pixel(x0, y0 + indi, value);
+			hwpixel(x0, y0 + indi, value);
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
 			value = getOffsetColor(data, startColorOffset);
 		}
@@ -117,7 +117,6 @@ void hyperdisplay::hwyline(uint16_t x0, uint16_t y0, uint16_t len, color_t data,
 
 void hyperdisplay::hwrectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, bool filled, uint16_t colorCycleLength, uint16_t startColorOffset, bool gradientVertical, bool reverseGradient)
 {
-	// xline(x0, y0, x1-x0+1, data, colorCycleLength, startColorOffset, reverseGradient);
 	if(x0 > x1)
 	{ 
 		SWAP_COORDS(x0, x1);
@@ -136,7 +135,7 @@ void hyperdisplay::hwrectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y
 			for(uint16_t y = y0; y <= y1; y++)
 			{
 				color_t value = getOffsetColor(data, startColorOffset);
-				xline(x0, y, xlen, value, 1, reverseGradient);
+				hwxline(x0, y, xlen, value, 1, reverseGradient);
 				startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
 			}
 		}
@@ -144,7 +143,7 @@ void hyperdisplay::hwrectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y
 		{
 			for(uint16_t y = y0; y <= y1; y++)
 			{
-				xline(x0, y, xlen, data, colorCycleLength, startColorOffset, reverseGradient);
+				hwxline(x0, y, xlen, data, colorCycleLength, startColorOffset, reverseGradient);
 			}
 		}
 	}
@@ -155,25 +154,25 @@ void hyperdisplay::hwrectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y
 
 		Serial.print("StartOffset: "); Serial.println(startColorOffset);
 
-		xline(x0, y0, xlen, value, colorCycleLength, startColorOffset, reverseGradient);
+		hwxline(x0, y0, xlen, value, colorCycleLength, startColorOffset, reverseGradient);
 		startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, xlen);
 		value = getOffsetColor(data, startColorOffset);
 
 		Serial.print("StartOffset: "); Serial.println(startColorOffset);
 
-		yline(x1, y0, ylen, value, colorCycleLength, startColorOffset, reverseGradient);
+		hwyline(x1, y0, ylen, value, colorCycleLength, startColorOffset, reverseGradient);
 		startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, ylen);
 		value = getOffsetColor(data, startColorOffset);
 
 		Serial.print("StartOffset: "); Serial.println(startColorOffset);
 
-		xline(x1, y1, xlen, value, colorCycleLength, startColorOffset, !reverseGradient);
+		hwxline(x1, y1, xlen, value, colorCycleLength, startColorOffset, !reverseGradient);
 		startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, xlen);
 		value = getOffsetColor(data, startColorOffset);
 
 		Serial.print("StartOffset: "); Serial.println(startColorOffset);
 
-		yline(x0, y1, ylen, value, colorCycleLength, startColorOffset, !reverseGradient);
+		hwyline(x0, y1, ylen, value, colorCycleLength, startColorOffset, !reverseGradient);
 		startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, ylen);
 		value = getOffsetColor(data, startColorOffset);
 
@@ -223,8 +222,9 @@ void hyperdisplay::pixel(int32_t x0, int32_t y0, color_t color)
 {
 	hyperdisplay_dim_check_t x0c = enforceLimits(&x0, false);				// if the dimension was off-window then it will now be on the edge. 
 	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, true); 
-	if((x0c != hyperdisplay_dim_ok) || (y0c != hyperdisplay_dim_ok))
+	if((x0c != hyperdisplay_dim_ok) || (y0c != hyperdisplay_dim_ok))	// Next use 'enforceLimits()' to make sure the desired object is within the active window, as well as to convert from window coordiantes to hw coordiantes for the upcoming call to hwpixel()
 	{
+		Serial.println("failed pixel check");
 		return;	// Do not print a single pixel at the wrong location ever
 	}
 	hwpixel(x0, y0, color);
@@ -236,7 +236,7 @@ void hyperdisplay::xline(int32_t x0, int32_t y0, uint16_t len, color_t data, uin
 	if(goLeft){ x1 = x0 - len; }else{ x1 = x0 + len; }						// Correct for goLeft
 	hyperdisplay_dim_check_t x0c = enforceLimits(&x0, false);				// if the dimension was off-window then it will now be on the edge. 
 	hyperdisplay_dim_check_t x1c = enforceLimits(&x1, false);
-	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, true); 
+	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, true); 						// Next use 'enforceLimits()' to make sure the desired object is within the active window, as well as to convert from window coordiantes to hw coordiantes for the upcoming call to hwxline()
 	if(y0c != hyperdisplay_dim_ok){ return; }											// Don't do it if y was wrong
 	if((x0c == hyperdisplay_dim_low) && (x1c == hyperdisplay_dim_low)){ return; }		// Don't do it if x0 and x1 were both low (would cause phantom dot at xMin)
 	if((x0c == hyperdisplay_dim_high) && (x1c == hyperdisplay_dim_high)){ return; }		// Don't do it if x0 and x1 were both high (would cause phantom dot at xMax)
@@ -249,7 +249,7 @@ void hyperdisplay::yline(int32_t x0, int32_t y0, uint16_t len, color_t data, uin
 	if(goUp){ y1 = y0 - len; }else{ y1 = y0 + len; }						// Correct for goUp
 	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, true);				// if the dimension was off-window then it will now be on the edge. 
 	hyperdisplay_dim_check_t y1c = enforceLimits(&y1, true);
-	hyperdisplay_dim_check_t x0c = enforceLimits(&x0, false); 
+	hyperdisplay_dim_check_t x0c = enforceLimits(&x0, false); 						// Next use 'enforceLimits()' to make sure the desired object is within the active window, as well as to convert from window coordiantes to hw coordiantes for the upcoming call to hwyline()
 	if(x0c != hyperdisplay_dim_ok){ return; }											// Don't do it if x was wrong
 	if((y0c == hyperdisplay_dim_low) && (y1c == hyperdisplay_dim_low)){ return; }		// Don't do it if y0 and y1 were both low (would cause phantom dot at yMin)
 	if((y0c == hyperdisplay_dim_high) && (y1c == hyperdisplay_dim_high)){ return; }		// Don't do it if y0 and y1 were both high (would cause phantom dot at yMax)
@@ -258,25 +258,25 @@ void hyperdisplay::yline(int32_t x0, int32_t y0, uint16_t len, color_t data, uin
 
 void hyperdisplay::rectangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, bool filled, uint16_t colorCycleLength, uint16_t startColorOffset, bool gradientVertical, bool reverseGradient)
 {
-	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, true);				// if the dimension was off-window then it will now be on the edge. 
+	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, true);				// if the dimension was off-window then it will now be on the edge. enforceLimits also applies the transformation into hw coordinates
 	hyperdisplay_dim_check_t y1c = enforceLimits(&y1, true);
 	hyperdisplay_dim_check_t x0c = enforceLimits(&x0, false); 
-	hyperdisplay_dim_check_t x1c = enforceLimits(&x1, false);
-	if((y0c == hyperdisplay_dim_low) && (y1c == hyperdisplay_dim_low)){ return; }		// Don't do it if y0 and y1 were both low (would cause phantom dot at yMin)
-	if((y0c == hyperdisplay_dim_high) && (y1c == hyperdisplay_dim_high)){ return; }		// Don't do it if y0 and y1 were both high (would cause phantom dot at yMax)
-	if((x0c == hyperdisplay_dim_low) && (x1c == hyperdisplay_dim_low)){ return; }		// Don't do it if x0 and x1 were both low (would cause phantom dot at xMin)
-	if((x0c == hyperdisplay_dim_high) && (x1c == hyperdisplay_dim_high)){ return; }		// Don't do it if x0 and x1 were both high (would cause phantom dot at xMax)
+	hyperdisplay_dim_check_t x1c = enforceLimits(&x1, false);						// Next use 'enforceLimits()' to make sure the desired object is within the active window, as well as to convert from window coordiantes to hw coordiantes for the upcoming call to hwrectangle()
+	if((y0c == hyperdisplay_dim_low) && (y1c == hyperdisplay_dim_low)){ return; }		// Don't do it if y0 and y1 were both low (would cause phantom line at yMin)
+	if((y0c == hyperdisplay_dim_high) && (y1c == hyperdisplay_dim_high)){ return; }		// Don't do it if y0 and y1 were both high (would cause phantom line at yMax)
+	if((x0c == hyperdisplay_dim_low) && (x1c == hyperdisplay_dim_low)){ return; }		// Don't do it if x0 and x1 were both low (would cause phantom line at xMin)
+	if((x0c == hyperdisplay_dim_high) && (x1c == hyperdisplay_dim_high)){ return; }		// Don't do it if x0 and x1 were both high (would cause phantom line at xMax)
 	hwrectangle(x0, y0, x1, y1, data, filled, colorCycleLength, startColorOffset, gradientVertical, reverseGradient);
 }
 
 void hyperdisplay::fillFromArray(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t numPixels, color_t data)
 {
 	// Check window coordinate validity
-	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, true);				// if the dimension was off-window then it will now be on the edge. 
+	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, true);
 	hyperdisplay_dim_check_t y1c = enforceLimits(&y1, true);
 	hyperdisplay_dim_check_t x0c = enforceLimits(&x0, false); 
-	hyperdisplay_dim_check_t x1c = enforceLimits(&x1, false);
-	if(x0c != hyperdisplay_dim_ok){ return; } 					// Return if any dimension was not ok because changing the dimensions could have adverse effects on the array (potential overflow or underflow)
+	hyperdisplay_dim_check_t x1c = enforceLimits(&x1, false);	// Next use 'enforceLimits()' to make sure the desired object is within the active window, as well as to convert from window coordiantes to hw coordiantes for the upcoming call to hwfillFromArray()
+	if(x0c != hyperdisplay_dim_ok){ return; } 						// Return if any dimension was not ok because changing the dimensions could have adverse effects on the array (potential overflow or underflow)
 	if(x1c != hyperdisplay_dim_ok){ return; } 
 	if(y0c != hyperdisplay_dim_ok){ return; } 
 	if(y1c != hyperdisplay_dim_ok){ return; } 
@@ -689,14 +689,16 @@ hyperdisplay_dim_check_t hyperdisplay::enforceLimits(int32_t * var, bool axisSel
 	if(axisSelect)
 	{
 		// y axis
-		if( *var > (int32_t)pCurrentWindow->yMax ){ high = true; }
-		if( *var < (int32_t)pCurrentWindow->yMin ){ low = true;  }
+		*var = (uint16_t)((*var) + (pCurrentWindow->yMin));													// Cast to uint16_t and apply transformation into hw coordiantes for comparison + usage in hw_____ functions
+		if( *var > (int32_t)pCurrentWindow->yMax ){ high = true; *var = (int32_t)pCurrentWindow->yMax; }	// Compare to hardware coordinate limits of the window
+		if( *var < (int32_t)pCurrentWindow->yMin ){ low = true;  *var = (int32_t)pCurrentWindow->yMin; }	// Compare to hardware coordinate limits of the window
 	}
 	else
 	{
 		// x axis
-		if( *var > (int32_t)pCurrentWindow->xMax ){ high = true; }
-		if( *var < (int32_t)pCurrentWindow->xMin ){ low = true;  } 
+		*var = (uint16_t)((*var) + (pCurrentWindow->xMin)); 												// Cast to uint16_t and apply transformation into hw coordiantes for comparison + usage in hw_____ functions
+		if( *var > (int32_t)pCurrentWindow->xMax ){ high = true; *var = (int32_t)pCurrentWindow->xMax; }	// Compare to hardware coordinate limits of the window
+		if( *var < (int32_t)pCurrentWindow->xMin ){ low = true;  *var = (int32_t)pCurrentWindow->xMin; }	// Compare to hardware coordinate limits of the window
 	}
 	if(high){ return hyperdisplay_dim_high; }
 	if(low ){ return hyperdisplay_dim_low;  }
