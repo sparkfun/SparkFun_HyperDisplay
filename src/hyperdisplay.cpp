@@ -410,11 +410,11 @@ void hyperdisplay::circle(int32_t x0, int32_t y0, uint16_t radius, color_t color
 {
 	if(radius < 2)
 	{
-		circle_Bresenham(x0, y0, radius, color, false);
+		circle_Bresenham(x0, y0, radius, color, filled);
 	}
 	else
 	{
-		circle_midpoint(x0, y0, radius, color, false);
+		circle_midpoint(x0, y0, radius, color, filled);
 	}
 }
 
@@ -482,13 +482,13 @@ void hyperdisplay::lineHigh(int32_t x0, int32_t y0, int32_t x1, int32_t y1, colo
 	{
 		if( D > 0 )
 		{
-			rectangle(x-shift-halfWidth, y-consecutive, x+halfWidth, y, data, true, colorCycleLength, startColorOffset, true, reverseGradient); 
+			rectangle(x-shift-halfWidth, y-consecutive+1, x+halfWidth, y, data, true, colorCycleLength, startColorOffset, true, reverseGradient); 
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, consecutive);
 
 			consecutive = 0;
 
 		   	x = x + xi;
-		   	D = D - 2*dy;
+		   	D = D - 2*dy;		
 		}
 		D = D + 2*dx;
 		consecutive++;
@@ -523,7 +523,7 @@ void hyperdisplay::lineLow(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color
 	{
 		if( D > 0 )
 		{
-			rectangle(x-consecutive, y-shift-halfWidth, x, y+halfWidth, data, true, colorCycleLength, startColorOffset, true, reverseGradient); 
+			rectangle(x-consecutive+1, y-shift-halfWidth, x, y+halfWidth, data, true, colorCycleLength, startColorOffset, true, reverseGradient); 
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, consecutive);
 
 			consecutive = 0;
