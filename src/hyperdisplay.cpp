@@ -497,13 +497,15 @@ void hyperdisplay::lineHigh(int32_t x0, int32_t y0, int32_t x1, int32_t y1, colo
 	{
 		if( D > 0 )
 		{
-			rectangle(x-shift-halfWidth, y-consecutive, x+halfWidth, y, data, true, colorCycleLength, startColorOffset, true, reverseGradient); 
+			rectangle(x-shift-halfWidth, y-consecutive+1, x+halfWidth, y, data, true, colorCycleLength, startColorOffset, true, reverseGradient); 
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, consecutive);
 
-		   	x = x + xi;
+			x = x + xi;
 		   	D = D - 2*dy;
+                        consecutive = 0;						
 		}
 		D = D + 2*dx;
+		consecutive++;
 	}
 }
     	
@@ -535,13 +537,15 @@ void hyperdisplay::lineLow(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color
 	{
 		if( D > 0 )
 		{
-			rectangle(x-consecutive, y-shift-halfWidth, x, y+halfWidth, data, true, colorCycleLength, startColorOffset, true, reverseGradient); 
+			rectangle(x-consecutive+1, y-shift-halfWidth, x, y+halfWidth, data, true, colorCycleLength, startColorOffset, true, reverseGradient); 
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, consecutive);
-
-		   	y = y + yi;
-		   	D = D - 2*dx;
+		   	
+			y = y + yi;
+			D = D - 2*dx;
+                        consecutive = 0;			
 		}
 		D = D + 2*dy;
+    		consecutive++;
 	}
 }
 
