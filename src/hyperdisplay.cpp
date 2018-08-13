@@ -114,19 +114,43 @@ void hyperdisplay::hwrectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y
 	uint16_t xlen = x1 - x0 + 1;
 	if(filled)
 	{
+		color_t value = getOffsetColor(data, startColorOffset);
 		if(gradientVertical)
 		{
-			for(uint16_t y = y0; y <= y1; y++)
+			if(reverseGradient)
 			{
-				hwxline(x0, y, xlen, data, 1, startColorOffset, reverseGradient);
-				startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
+				for(uint16_t y = y1; y >= y0; y--)
+				{
+					hwxline(x1, y, xlen, value, 1, startColorOffset, reverseGradient);
+					startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
+					value = getOffsetColor(data, startColorOffset);
+				}
+			}
+			else
+			{
+				for(uint16_t y = y0; y <= y1; y++)
+				{
+					hwxline(x0, y, xlen, value, 1, startColorOffset, reverseGradient);
+					startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
+					value = getOffsetColor(data, startColorOffset);
+				}
 			}
 		}
 		else
 		{
-			for(uint16_t y = y0; y <= y1; y++)
+			if(reverseGradient)
 			{
-				hwxline(x0, y, xlen, data, colorCycleLength, startColorOffset, reverseGradient);
+				for(uint16_t y = y1; y >= y0; y--)
+				{
+					hwxline(x1, y, xlen, data, colorCycleLength, startColorOffset, reverseGradient);
+				}
+			}
+			else
+			{
+				for(uint16_t y = y0; y <= y1; y++)
+				{
+					hwxline(x0, y, xlen, data, colorCycleLength, startColorOffset, reverseGradient);
+				}
 			}
 		}
 	}
@@ -134,38 +158,34 @@ void hyperdisplay::hwrectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y
 	{
 		uint16_t ylen = y1 - y0 + 1;
 
-		hwxline(x0, y0, xlen-5, data, colorCycleLength, startColorOffset, reverseGradient);
-
-		startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 2);
-		// value = getOffsetColor(data, startColorOffset);
-		hwyline(x1, y0, ylen-5, data, colorCycleLength, startColorOffset, reverseGradient);
-
-		startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, ylen);
-		// value = getOffsetColor(data, startColorOffset);
-		hwxline(x1, y1, xlen-5, data, colorCycleLength, startColorOffset, !reverseGradient);
-
-		startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, xlen);
-		// value = getOffsetColor(data, startColorOffset);
-		hwyline(x0, y1, ylen-10, data, colorCycleLength, startColorOffset, !reverseGradient);
-
-		// startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, ylen);
-		// value = getOffsetColor(data, startColorOffset);
-
+		if(reverseGradient)
+		{
+			hwxline(x1, y0, xlen, data, colorCycleLength, startColorOffset, reverseGradient);
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, xlen);
+			hwyline(x0, y0+1, ylen-2, data, colorCycleLength, startColorOffset, !reverseGradient);
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, ylen-2);
+			hwxline(x0, y1, xlen, data, colorCycleLength, startColorOffset, !reverseGradient);
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, xlen);
+			hwyline(x1, y1-1, ylen-2, data, colorCycleLength, startColorOffset, reverseGradient);
+		}
+		else
+		{
+			hwxline(x0, y0, xlen, data, colorCycleLength, startColorOffset, reverseGradient);
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, xlen);
+			hwyline(x1, y0+1, ylen-2, data, colorCycleLength, startColorOffset, reverseGradient);
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, ylen-2);
+			hwxline(x1, y1, xlen, data, colorCycleLength, startColorOffset, !reverseGradient);
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, xlen);
+			hwyline(x0, y1-1, ylen-2, data, colorCycleLength, startColorOffset, !reverseGradient);
+		}
 	}
 	hyperdisplayRectangleCallback(x0, y0, x1, y1, data, filled, colorCycleLength, startColorOffset, gradientVertical, reverseGradient);
 }
 
 void hyperdisplay::hwfillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint32_t numPixels, color_t data)
 {
-	if(x0 > x1)
-	{ 
-		SWAP_COORDS(x0, x1);
-	}
-	
-	if(y0 > y1)
-	{ 
-		SWAP_COORDS(y0, y1);
-	}
+	if(x0 > x1){ SWAP_COORDS(x0, x1); }
+	if(y0 > y1){ SWAP_COORDS(y0, y1); }
 
 	uint32_t pixel_count = 0;
 	for(uint16_t x = x0; x < x1; x++)
@@ -374,12 +394,10 @@ void hyperdisplay::line(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t
 	{
     	if( y0 > y1 )
       	{
-      		Serial.print("Here");
       		lineHigh(x1, y1, x0, y0, width, data, colorCycleLength, startColorOffset, reverseGradient);
       	}
     	else
     	{
-    		Serial.print("Here2");
       		lineHigh(x0, y0, x1, y1, width, data, colorCycleLength, startColorOffset, reverseGradient);
   		}
 	}
