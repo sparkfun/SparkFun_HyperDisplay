@@ -411,14 +411,14 @@ void hyperdisplay::polygon(int32_t x[], int32_t y[], uint8_t numSides, uint16_t 
 
 void hyperdisplay::circle(int32_t x0, int32_t y0, uint16_t radius, color_t color, bool filled)
 {
-	// if(radius < 2)
-	// {
-	// 	circle_Bresenham(x0, y0, radius, color, filled);
-	// }
-	// else
-	// {
-	// 	circle_midpoint(x0, y0, radius, color, filled);
-	// }
+	if(radius < 2)
+	{
+		circle_Bresenham(x0, y0, radius, color, filled);
+	}
+	else
+	{
+		circle_midpoint(x0, y0, radius, color, filled);
+	}
 }
 
 void hyperdisplay::fillWindow(color_t color)
@@ -465,7 +465,7 @@ void hyperdisplay::lineHigh(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint
 		shift = 1;
 	}
 
-	uint16_t dy = y1 - y0;	// Guaranteed positive
+	int32_t dy = y1 - y0;	// Guaranteed positive - but we might want it to be negative
   	int32_t dx = x1 - x0;
 	int8_t xi = 1;
 
@@ -474,7 +474,6 @@ void hyperdisplay::lineHigh(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint
 		xi = -1;
 		dx = -dx;
 	}
-
 	int32_t D = 2*dx - dy;
 	uint16_t x = x0;
 	uint16_t consecutive = 0;
