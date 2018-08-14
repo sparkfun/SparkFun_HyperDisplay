@@ -77,14 +77,16 @@ class hyperdisplay : public Print{
         public: // temporary!
 
     	// Some protected drawing functions - not to be used directly
-    	void lineHigh(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t width, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset,  bool reverseGradient);
-    	void lineLow(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t width, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, bool reverseGradient);
+    	uint16_t lineHighNorm(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t width, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset);
+    	uint16_t lineLowNorm(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t width, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset);
+        uint16_t lineHighReverse(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t width, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset);
+        uint16_t lineLowReverse(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t width, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset);
     	void circle_Bresenham(int32_t x0, int32_t y0, uint16_t radius, color_t color, bool fill);
 		void circle_midpoint(uint8_t x0, uint8_t y0, uint8_t radius, color_t color, bool fill);
 		void circle_eight(uint8_t xc, uint8_t yc, int16_t dx, int16_t dy, color_t color, bool fill);
 
         // Utility functions
-    	uint16_t getNewColorOffset(uint16_t colorCycleLength, uint16_t startColorOffset, uint16_t numWritten);
+    	uint16_t getNewColorOffset(uint16_t colorCycleLength, uint16_t startColorOffset, int32_t numWritten);
         hyperdisplay_dim_check_t enforceLimits(int32_t * var, bool axisSelect);       
         virtual void setupDefaultWindow( void );                        // User can override this function                                                               // Fills out the default window structure and associates it to the current window 
         void setupHyperDisplay(uint16_t xSize, uint16_t ySize);         // Call this function in the begin() function of the derived class to ensure that all necessary paramters for the hyperdisplay parent class are set correctly
@@ -113,10 +115,10 @@ class hyperdisplay : public Print{
         void fillFromArray(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t numPixels, color_t data = NULL); 
 
         // These use the 'primitive' functions and are available to users - coordinates are with respect to the current window
-        void line(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t width = 1, color_t data = NULL, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool reverseGradient = false); 
-        void polygon(int32_t x[], int32_t y[], uint8_t numSides, uint16_t width = 1, color_t color = NULL);
-        void circle(int32_t x0, int32_t y0, uint16_t radius, color_t color = NULL, bool filled = false); // Fills the entire current window
-        void fillWindow(color_t color);
+        uint16_t line(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t width = 1, color_t data = NULL, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool reverseGradient = false); 
+        void polygon(int32_t x[], int32_t y[], uint8_t numSides, uint16_t width = 1, color_t data = NULL, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool reverseGradient = false);
+        void circle(int32_t x0, int32_t y0, uint16_t radius, bool filled = false, color_t data = NULL, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool reverseGradient = false); 
+        void fillWindow(color_t color);                                                                     // Fills the entire current window
     
         // Printing
         virtual size_t write(uint8_t val);                                      // This is the implementation of write that is inherited from, left as virtual to be implementation specific
