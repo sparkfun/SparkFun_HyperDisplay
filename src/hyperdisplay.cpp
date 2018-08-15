@@ -32,7 +32,7 @@ hyperdisplay::hyperdisplay(uint16_t xSize, uint16_t ySize)
 	yExt = ySize;
 
 	pCurrentWindow = &hyperdisplayDefaultWindow;	// Sets the current window to the default window structure
-	setWindowDefaults();							// Sets reasonable (uninitialized) values for the current window structure.
+	setWindowDefaults(pCurrentWindow);				// Sets reasonable (uninitialized) values for the current window structure.
 }
 
 
@@ -1078,28 +1078,28 @@ hyperdisplay_dim_check_t hyperdisplay::enforceLimits(int32_t * var, bool axisSel
 	return hyperdisplay_dim_ok;
 }
 
-void hyperdisplay::setWindowDefaults( void )
+void hyperdisplay::setWindowDefaults(wind_info_t * pwindow)
 {
 	// Fills out the default window structure with more or less reasonable defaults
-	pCurrentWindow->xMin = 0;
-	pCurrentWindow->yMin = 0;
-	pCurrentWindow->xMax = xExt;
-	pCurrentWindow->yMax = yExt;
-	pCurrentWindow->cursorX = 0;
-	pCurrentWindow->cursorY = 0;
-	pCurrentWindow->xReset = 0;
-	pCurrentWindow->yReset = 0;
+	pwindow->xMin = 0;
+	pwindow->yMin = 0;
+	pwindow->xMax = xExt;
+	pwindow->yMax = yExt;
+	pwindow->cursorX = 0;
+	pwindow->cursorY = 0;
+	pwindow->xReset = 0;
+	pwindow->yReset = 0;
 	
-	pCurrentWindow->lastCharacter.data = NULL;
-	pCurrentWindow->lastCharacter.xLoc = NULL;
-	pCurrentWindow->lastCharacter.yLoc = NULL;
-	pCurrentWindow->lastCharacter.xDim = 0;
-	pCurrentWindow->lastCharacter.yDim = 0;
-	pCurrentWindow->lastCharacter.numPixels = 0;
-	pCurrentWindow->lastCharacter.show = false;
-	pCurrentWindow->lastCharacter.causesNewline = false;
+	pwindow->lastCharacter.data = NULL;
+	pwindow->lastCharacter.xLoc = NULL;
+	pwindow->lastCharacter.yLoc = NULL;
+	pwindow->lastCharacter.xDim = 0;
+	pwindow->lastCharacter.yDim = 0;
+	pwindow->lastCharacter.numPixels = 0;
+	pwindow->lastCharacter.show = false;
+	pwindow->lastCharacter.causesNewline = false;
 	
-	pCurrentWindow->data = NULL;				// No window data yet
+	pwindow->data = NULL;				// No window data yet
 	setCurrentWindowColorSequence(NULL, 1, 0);	// Setup the default color (Which is NULL, so that you know it is not set yet)
 }
 
