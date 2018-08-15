@@ -97,7 +97,7 @@ void hyperdisplay::hwyline(uint16_t x0, uint16_t y0, uint16_t len, color_t data,
 	hyperdisplayYLineCallback(x0, y0, len, data, colorCycleLength, startColorOffset, goUp);
 }
 
-void hyperdisplay::hwrectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, color_t data, bool filled, uint16_t colorCycleLength, uint16_t startColorOffset, bool reverseGradient, bool gradientVertical)
+void hyperdisplay::hwrectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, bool filled, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, bool reverseGradient, bool gradientVertical)
 {
 	if(x0 > x1){ SWAP_COORDS(x0, x1); }
 	if(y0 > y1){ SWAP_COORDS(y0, y1); }
@@ -210,10 +210,11 @@ void hyperdisplay::pixel(int32_t x0, int32_t y0, color_t data, uint16_t colorCyc
 	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, true); 
 	if((x0c != hyperdisplay_dim_ok) || (y0c != hyperdisplay_dim_ok))	// Next use 'enforceLimits()' to make sure the desired object is within the active window, as well as to convert from window coordiantes to hw coordiantes for the upcoming call to hwpixel()
 	{
-		Serial.println("failed pixel check");
 		return;	// Do not print a single pixel at the wrong location ever
 	}
-	hwpixel(x0, y0, data, colorCycleLength, startColorOffset);
+	// Check if we are to use the default color
+	if(data == NULL){ hwpixel(x0, y0, pCurrentWindow->currentSequenceData, pCurrentWindow->currentColorCycleLength, pCurrentWindow->currentColorOffset); }
+	else{ hwpixel(x0, y0, data, colorCycleLength, startColorOffset); }
 }
 
 void hyperdisplay::xline(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, bool goLeft)
@@ -226,7 +227,9 @@ void hyperdisplay::xline(int32_t x0, int32_t y0, uint16_t len, color_t data, uin
 	if(y0c != hyperdisplay_dim_ok){ return; }											// Don't do it if y was wrong
 	if((x0c == hyperdisplay_dim_low) && (x1c == hyperdisplay_dim_low)){ return; }		// Don't do it if x0 and x1 were both low (would cause phantom dot at xMin)
 	if((x0c == hyperdisplay_dim_high) && (x1c == hyperdisplay_dim_high)){ return; }		// Don't do it if x0 and x1 were both high (would cause phantom dot at xMax)
-	hwxline(x0, y0, len, data, colorCycleLength, startColorOffset, goLeft);
+	// Check if default color
+	if(data == NULL){ hwxline(x0, y0, len, pCurrentWindow->currentSequenceData, pCurrentWindow->currentColorCycleLength, pCurrentWindow->currentColorOffset, goLeft); }
+	else{ hwxline(x0, y0, len, data, colorCycleLength, startColorOffset, goLeft); }
 }
 
 void hyperdisplay::yline(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, bool goUp)
@@ -239,10 +242,11 @@ void hyperdisplay::yline(int32_t x0, int32_t y0, uint16_t len, color_t data, uin
 	if(x0c != hyperdisplay_dim_ok){ return; }											// Don't do it if x was wrong
 	if((y0c == hyperdisplay_dim_low) && (y1c == hyperdisplay_dim_low)){ return; }		// Don't do it if y0 and y1 were both low (would cause phantom dot at yMin)
 	if((y0c == hyperdisplay_dim_high) && (y1c == hyperdisplay_dim_high)){ return; }		// Don't do it if y0 and y1 were both high (would cause phantom dot at yMax)
-	hwyline(x0, y0, len, data, colorCycleLength, startColorOffset, goUp);
+	if(data == NULL){ hwxline(x0, y0, len, pCurrentWindow->currentSequenceData, pCurrentWindow->currentColorCycleLength, pCurrentWindow->currentColorOffset, goUp); }
+	else{ hwxline(x0, y0, len, data, colorCycleLength, startColorOffset, goUp); }
 }
 
-void hyperdisplay::rectangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, bool filled, uint16_t colorCycleLength, uint16_t startColorOffset, bool gradientVertical, bool reverseGradient)
+void hyperdisplay::rectangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, bool filled, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, bool gradientVertical, bool reverseGradient)
 {
 	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, true);				// if the dimension was off-window then it will now be on the edge. enforceLimits also applies the transformation into hw coordinates
 	hyperdisplay_dim_check_t y1c = enforceLimits(&y1, true);
@@ -252,7 +256,8 @@ void hyperdisplay::rectangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, col
 	if((y0c == hyperdisplay_dim_high) && (y1c == hyperdisplay_dim_high)){ return; }		// Don't do it if y0 and y1 were both high (would cause phantom line at yMax)
 	if((x0c == hyperdisplay_dim_low) && (x1c == hyperdisplay_dim_low)){ return; }		// Don't do it if x0 and x1 were both low (would cause phantom line at xMin)
 	if((x0c == hyperdisplay_dim_high) && (x1c == hyperdisplay_dim_high)){ return; }		// Don't do it if x0 and x1 were both high (would cause phantom line at xMax)
-	hwrectangle(x0, y0, x1, y1, data, filled, colorCycleLength, startColorOffset, gradientVertical, reverseGradient);
+	if(data == NULL){  hwrectangle(x0, y0, x1, y1, filled, pCurrentWindow->currentSequenceData, pCurrentWindow->currentColorCycleLength, pCurrentWindow->currentColorOffset, gradientVertical, reverseGradient); }
+	else{ hwrectangle(x0, y0, x1, y1, filled, data, colorCycleLength, startColorOffset, gradientVertical, reverseGradient); }
 }
 
 void hyperdisplay::fillFromArray(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t numPixels, color_t data)
@@ -266,11 +271,32 @@ void hyperdisplay::fillFromArray(int32_t x0, int32_t y0, int32_t x1, int32_t y1,
 	if(x1c != hyperdisplay_dim_ok){ return; } 
 	if(y0c != hyperdisplay_dim_ok){ return; } 
 	if(y1c != hyperdisplay_dim_ok){ return; } 
-	hwfillFromArray(x0, y0, x1, y1, numPixels, data);
+	if(data != NULL){ hwfillFromArray(x0, y0, x1, y1, numPixels, data); }
 }
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void hyperdisplay::setCurrentWindowColorSequence(color_t data, uint16_t colorCycleLength, uint16_t startColorOffset)
+{
+	pCurrentWindow->currentSequenceData = data;
+	pCurrentWindow->currentColorCycleLength = colorCycleLength;
+	pCurrentWindow->currentColorOffset = startColorOffset;
+}
 
 
 
@@ -297,51 +323,104 @@ void hyperdisplay::fillFromArray(int32_t x0, int32_t y0, int32_t x1, int32_t y1,
 	size_t hyperdisplay::write(uint8_t val)
 	{
 		size_t numWritten = 0;
-
-
 		getCharInfo(val, &hyperdisplayDefaultCharacter);
-		
-		if(hyperdisplayDefaultCharacter.show)
+
+		Serial.print("Num pixels: "); Serial.println(hyperdisplayDefaultCharacter.numPixels);
+
+		// Check to see if current cursor coordinates work for the requested character
+		if(((pCurrentWindow->xMax - pCurrentWindow->xMin) - hyperdisplayDefaultCharacter.xDim) < pCurrentWindow->cursorX)
 		{
-			// Code to show the character
-			
-			// if(pCurrentWindow != NULL)		// Make sure there is a valid window object
-			// {
-			// 	if(hyperdisplayDefaultCharacter.causedNewline)		// Check if the character is meant to cause a new line
-			// 	{
-			// 		pCurrentWindow->cursorX = pCurrentWindow->xMin;		// Reset the x cursor to the beginning
-			// 		if((pCurrentWindow->yMax - hyperdisplayDefaultCharacter.yDim) < pCurrentWindow->cursorY)			// Check if the y cursor will runn off the screen
-			// 		{
-			// 			hyperdisplayDefaultCharacter.show = false;						// If so then don't show the character
-			// 			pCurrentWindow->cursorY += hyperdisplayDefaultCharacter.yDim;	// And also only increment the cursor if within the proper bounds to avoid a long-term wraparound condition
-			// 		}
-			// 	}
-			// 	else if((pCurrentWindow->xMax - hyperdisplayDefaultCharacter.xDim) < pCurrentWindow->cursorX)	// If the character does not trigger newlines then make sure there is still room for it left-to-right
-			// 	{
-			// 		hyperdisplayDefaultCharacter.causedNewline = true;					// If there is not then it needs to cause a newline
-			// 		pCurrentWindow->cursorX = pCurrentWindow->xMin;		// Go through the same process as above to check bounds
-			// 		if((pCurrentWindow->yMax - hyperdisplayDefaultCharacter.yDim) < pCurrentWindow->cursorY)
-			// 		{
-			// 			hyperdisplayDefaultCharacter.show = false;
-			// 			pCurrentWindow->cursorY += hyperdisplayDefaultCharacter.yDim;
-			// 		}
-			// 	}
-			// 	else	// If will be entirely within bounds then simply increment the x cursor
-			// 	{
-			// 		pCurrentWindow->cursorX += hyperdisplayDefaultCharacter.xDim;
-			// 	}
-			// 	// Write data to display, but only if it is still meant to be shown
-			// 	if(hyperdisplayDefaultCharacter.show)
-			// 	{
-			// 		fillFromArray(pCurrentWindow->cursorX, pCurrentWindow->cursorY, pCurrentWindow->cursorX+hyperdisplayDefaultCharacter.xDim, pCurrentWindow->cursorY+hyperdisplayDefaultCharacter.yDim, hyperdisplayDefaultCharacter.numPixels, hyperdisplayDefaultCharacter.data);
-			// 		numWritten = 1;
-			// 	}
-			// }
+			if(((pCurrentWindow->yMax - pCurrentWindow->yMin) - hyperdisplayDefaultCharacter.yDim) < pCurrentWindow->cursorY)
+			{
+				Serial.println("Returning");
+				return numWritten;	// return because there is no more room in the x or y directions of the window
+			}
+
+			Serial.println("Got here");
+
+			pCurrentWindow->cursorX = pCurrentWindow->xReset;				// Put x cursor back to reset location
+			pCurrentWindow->cursorY += hyperdisplayDefaultCharacter.yDim;	// Move the cursor down by the size of the character
 		}
 
-		pCurrentWindow->lastCharacter = hyperdisplayDefaultCharacter;	// Set this character as the previous character 
+		Serial.println("here I am");
+
+		// // Now write the character
+		if(hyperdisplayDefaultCharacter.show)
+		{
+			//fillFromArray(pCurrentWindow->cursorX, pCurrentWindow->cursorY, pCurrentWindow->cursorX+hyperdisplayDefaultCharacter.xDim, pCurrentWindow->cursorY+hyperdisplayDefaultCharacter.yDim, hyperdisplayDefaultCharacter.numPixels, hyperdisplayDefaultCharacter.data);
+			for(uint32_t indi = 0; indi < hyperdisplayDefaultCharacter.numPixels; indi++)
+			{
+				pixel(((pCurrentWindow->cursorX)+*(hyperdisplayDefaultCharacter.xLoc + indi)), ((pCurrentWindow->cursorY)+*(hyperdisplayDefaultCharacter.yLoc + indi)), NULL, 1, 0);
+			}
+
+			numWritten = 1;
+
+			// Now advance the cursor in the x direction so that you don't overwrite the work you just did
+			pCurrentWindow->cursorX += hyperdisplayDefaultCharacter.xDim;
+		}
+
+		pCurrentWindow->lastCharacter = hyperdisplayDefaultCharacter;	// Set this character as the previous character - the info will persist because this is direct 
 		return numWritten;				
 	}
+
+#if HYPERDISPLAY_INCLUDE_DEFAULT_FONT 			        
+		void hyperdisplay::getCharInfo(uint8_t character, character_info * character_info) 
+		{
+			// This is the most basic font implementation, it only prints a monochrome character using the first color of the current window's current color sequence
+			// If you want any more font capabilities then you should re-implement this function :D
+
+			character_info->data = NULL;	// Use the window's current color
+
+			// Link the default cordinate arrays
+			character_info->xLoc = hyperdisplayDefaultXloc;
+			character_info->yLoc = hyperdisplayDefaultYloc;
+
+			character_info->xDim = 5;
+			character_info->yDim = 8;
+
+			// Figure out if the character should cause a newline
+			if (character == '\r' || character == '\n')
+			{
+				character_info->causesNewline = true;
+			}
+			else
+			{
+				character_info->causesNewline = false;
+			} 
+
+			// Figure out if you need to actually show the chracter
+			if((character >= ' ') && (character <= '~'))
+			{
+				character_info->show = true;
+			}
+			else
+			{
+				character_info->show = false;
+				return;								// No point in continuing;
+			}
+
+			// Load up the character data and fill in coordinate data
+			uint8_t values[5];							// Holds the 5 bytes for the character
+			uint16_t offset = 6 + 5 * (character - 0);
+			character_info->numPixels = 0;
+			uint16_t n = 0;
+			for(uint8_t indi = 0; indi < 5; indi++)
+			{
+				values[indi] = pgm_read_byte(font5x7 + offset + indi);
+				for(uint8_t indj = 0; indj < 8; indj++)
+				{
+					if(values[indi] & (0x01 << indj))
+					{
+						character_info->numPixels++;
+						*(character_info->xLoc + n) = indi;
+						*(character_info->yLoc + n) = indj;
+						n++;
+					}
+				}
+			}
+		}
+#endif /* HYPERDISPLAY_INCLUDE_DEFAULT_FONT */
+
 #else /* HYPERDISPLAY_USE_PRINT */
 	// This is here in case you choose not to implement printing functions
 	size_t hyperdisplay::write(uint8_t val)
@@ -349,6 +428,23 @@ void hyperdisplay::fillFromArray(int32_t x0, int32_t y0, int32_t x1, int32_t y1,
 		Serial.write(val);
 	}
 #endif /* HYPERDISPLAY_USE_PRINT */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -516,18 +612,9 @@ void hyperdisplay::circle(int32_t x0, int32_t y0, uint16_t radius, bool filled, 
 
 void hyperdisplay::fillWindow(color_t color)
 {
-	rectangle(0, 0, pCurrentWindow->xMax-pCurrentWindow->xMin, pCurrentWindow->yMax-pCurrentWindow->yMin, color, true, 1, 0, false, false);
+	rectangle(0, 0, pCurrentWindow->xMax-pCurrentWindow->xMin, pCurrentWindow->yMax-pCurrentWindow->yMin, true, color, 1, 0, false, false);
 }
 
-
-#if HYPERDISPLAY_USE_PRINT
-	#if HYPERDISPLAY_INCLUDE_DEFAULT_FONT 					        
-	    void getCharInfo(uint8_t val, char_info_t * pchar)		// The defualt implementation 
-	    {
-
-	    }	
-	#endif
-#endif
 
 
 
@@ -584,7 +671,7 @@ uint16_t hyperdisplay::lineHighNorm(int32_t x0, int32_t y0, int32_t x1, int32_t 
 			}
 			else
 			{
-				rectangle(x+shift-halfWidth, y-consecutive+1, x+halfWidth, y, data, true, colorCycleLength, startColorOffset, false, true); 
+				rectangle(x+shift-halfWidth, y-consecutive+1, x+halfWidth, y, true, data, colorCycleLength, startColorOffset, false, true); 
 			}
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, consecutive);
 
@@ -601,7 +688,7 @@ uint16_t hyperdisplay::lineHighNorm(int32_t x0, int32_t y0, int32_t x1, int32_t 
 	}
 	else
 	{
-		rectangle(x+shift-halfWidth, y-consecutive, x+halfWidth, y, data, true, colorCycleLength, startColorOffset, false, true); 
+		rectangle(x+shift-halfWidth, y-consecutive, x+halfWidth, y, true, data, colorCycleLength, startColorOffset, false, true); 
 	}
 	return dy;
 }
@@ -643,7 +730,7 @@ uint16_t hyperdisplay::lineHighReverse(int32_t x0, int32_t y0, int32_t x1, int32
 			}
 			else
 			{
-				rectangle(x+shift-halfWidth, y+consecutive-1, x+halfWidth, y, data, true, colorCycleLength, startColorOffset, true, true); 
+				rectangle(x+shift-halfWidth, y+consecutive-1, x+halfWidth, y, true, data, colorCycleLength, startColorOffset, true, true); 
 			}
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, consecutive);
 
@@ -660,7 +747,7 @@ uint16_t hyperdisplay::lineHighReverse(int32_t x0, int32_t y0, int32_t x1, int32
 	}
 	else
 	{
-		rectangle(x+shift-halfWidth, y+consecutive, x+halfWidth, y, data, true, colorCycleLength, startColorOffset, true, true); 
+		rectangle(x+shift-halfWidth, y+consecutive, x+halfWidth, y, true, data, colorCycleLength, startColorOffset, true, true); 
 	}
 	return dy;
 }
@@ -704,7 +791,7 @@ uint16_t hyperdisplay::lineLowNorm(int32_t x0, int32_t y0, int32_t x1, int32_t y
 			}
 			else
 			{
-				rectangle(x-consecutive+1, y+shift-halfWidth, x, y+halfWidth, data, true, colorCycleLength, startColorOffset, false, false); 
+				rectangle(x-consecutive+1, y+shift-halfWidth, x, y+halfWidth, true, data, colorCycleLength, startColorOffset, false, false); 
 			}
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, consecutive);
 
@@ -721,7 +808,7 @@ uint16_t hyperdisplay::lineLowNorm(int32_t x0, int32_t y0, int32_t x1, int32_t y
 	}
 	else
 	{
-		rectangle(x-consecutive, y+shift-halfWidth, x, y+halfWidth, data, true, colorCycleLength, startColorOffset, false, false); 
+		rectangle(x-consecutive, y+shift-halfWidth, x, y+halfWidth, true, data, colorCycleLength, startColorOffset, false, false); 
 	}
 	return dx;
 }
@@ -763,7 +850,7 @@ uint16_t hyperdisplay::lineLowReverse(int32_t x0, int32_t y0, int32_t x1, int32_
 			}
 			else
 			{
-				rectangle(x+consecutive-1, y+shift-halfWidth, x, y+halfWidth, data, true, colorCycleLength, startColorOffset, true, false); 
+				rectangle(x+consecutive-1, y+shift-halfWidth, x, y+halfWidth, true, data, colorCycleLength, startColorOffset, true, false); 
 			}
 			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, consecutive);
 
@@ -780,7 +867,7 @@ uint16_t hyperdisplay::lineLowReverse(int32_t x0, int32_t y0, int32_t x1, int32_
 	}
 	else
 	{
-		rectangle(x+consecutive, y+shift-halfWidth, x, y+halfWidth, data, true, colorCycleLength, startColorOffset, true, false); 
+		rectangle(x+consecutive, y+shift-halfWidth, x, y+halfWidth, true, data, colorCycleLength, startColorOffset, true, false); 
 	}
 	return dx;
 }
@@ -839,8 +926,8 @@ void hyperdisplay::circle_midpoint(uint8_t x0, uint8_t y0, uint8_t radius, color
 
         if(fill)
         {
-        	rectangle(x0-dx, y0, x0+dx, y0, color, true);
-        	rectangle(x0, y0-dx, x0, y0+dx, color, true);
+        	rectangle(x0-dx, y0, x0+dx, y0, true, color);
+        	rectangle(x0, y0-dx, x0, y0+dx, true, color);
         }
     }
 
@@ -875,8 +962,8 @@ void hyperdisplay::circle_midpoint(uint8_t x0, uint8_t y0, uint8_t radius, color
 
         if(fill)
         {
-        	rectangle(x0-dx, y0+dy, x0+dx, y0+dy, color, true);
-        	rectangle(x0-dx, y0-dy, x0+dx, y0-dy, color, true);
+        	rectangle(x0-dx, y0+dy, x0+dx, y0+dy, true, color);
+        	rectangle(x0-dx, y0-dy, x0+dx, y0-dy, true, color);
         }
          
         // If the generated point is on the line x = y then 
@@ -890,8 +977,8 @@ void hyperdisplay::circle_midpoint(uint8_t x0, uint8_t y0, uint8_t radius, color
 
         	if(fill)
 	        {
-	        	rectangle(x0-dy, y0+dx, x0+dy, y0+dx, color, true);
-	        	rectangle(x0-dy, y0-dx, x0+dy, y0-dx, color, true);
+	        	rectangle(x0-dy, y0+dx, x0+dy, y0+dx, true, color);
+	        	rectangle(x0-dy, y0-dx, x0+dy, y0-dx, true, color);
 	        }
         }
     } 
@@ -910,10 +997,10 @@ void hyperdisplay::circle_eight(uint8_t x0, uint8_t y0, int16_t dx, int16_t dy, 
 
 	if(fill)
 	{
-		rectangle(x0-dx, y0+dy, x0+dx, y0+dy, color, true);
-    	rectangle(x0-dx, y0-dx, x0+dx, y0-dx, color, true);
-    	rectangle(x0-dy, y0+dx, x0+dy, y0+dx, color, true);
-    	rectangle(x0-dy, y0-dx, x0+dy, y0-dx, color, true);
+		rectangle(x0-dx, y0+dy, x0+dx, y0+dy, true, color);
+    	rectangle(x0-dx, y0-dx, x0+dx, y0-dx, true, color);
+    	rectangle(x0-dy, y0+dx, x0+dy, y0+dx, true, color);
+    	rectangle(x0-dy, y0-dx, x0+dy, y0-dx, true, color);
 	}
 }
 
@@ -945,14 +1032,14 @@ hyperdisplay_dim_check_t hyperdisplay::enforceLimits(int32_t * var, bool axisSel
 	if(axisSelect)
 	{
 		// y axis
-		*var = (uint16_t)((*var) + (pCurrentWindow->yMin));													// Cast to uint16_t and apply transformation into hw coordiantes for comparison + usage in hw_____ functions
+		*var = (int32_t)((*var) + (pCurrentWindow->yMin));													// Cast to uint16_t and apply transformation into hw coordiantes for comparison + usage in hw_____ functions
 		if( *var > (int32_t)pCurrentWindow->yMax ){ high = true; *var = (int32_t)pCurrentWindow->yMax; }	// Compare to hardware coordinate limits of the window
 		if( *var < (int32_t)pCurrentWindow->yMin ){ low = true;  *var = (int32_t)pCurrentWindow->yMin; }	// Compare to hardware coordinate limits of the window
 	}
 	else
 	{
 		// x axis
-		*var = (uint16_t)((*var) + (pCurrentWindow->xMin)); 												// Cast to uint16_t and apply transformation into hw coordiantes for comparison + usage in hw_____ functions
+		*var = (int32_t)((*var) + (pCurrentWindow->xMin)); 												// Cast to uint16_t and apply transformation into hw coordiantes for comparison + usage in hw_____ functions
 		if( *var > (int32_t)pCurrentWindow->xMax ){ high = true; *var = (int32_t)pCurrentWindow->xMax; }	// Compare to hardware coordinate limits of the window
 		if( *var < (int32_t)pCurrentWindow->xMin ){ low = true;  *var = (int32_t)pCurrentWindow->xMin; }	// Compare to hardware coordinate limits of the window
 	}
@@ -961,9 +1048,9 @@ hyperdisplay_dim_check_t hyperdisplay::enforceLimits(int32_t * var, bool axisSel
 	return hyperdisplay_dim_ok;
 }
 
-void hyperdisplay::setupDefaultWindow( void )
+void hyperdisplay::setWindowDefaults( void )
 {
-	pCurrentWindow = &hyperdisplayDefaultWindow;
+	// Fills out the default window structure with more or less reasonable defaults
 	pCurrentWindow->xMin = 0;
 	pCurrentWindow->yMin = 0;
 	pCurrentWindow->xMax = xExt;
@@ -972,15 +1059,27 @@ void hyperdisplay::setupDefaultWindow( void )
 	pCurrentWindow->cursorY = 0;
 	pCurrentWindow->xReset = 0;
 	pCurrentWindow->yReset = 0;
-	// pCurrentWindow->lastCharacter = NULL;	// 
-	pCurrentWindow->data = NULL;
+	
+	pCurrentWindow->lastCharacter.data = NULL;
+	pCurrentWindow->lastCharacter.xLoc = NULL;
+	pCurrentWindow->lastCharacter.yLoc = NULL;
+	pCurrentWindow->lastCharacter.xDim = 0;
+	pCurrentWindow->lastCharacter.yDim = 0;
+	pCurrentWindow->lastCharacter.numPixels = 0;
+	pCurrentWindow->lastCharacter.show = false;
+	pCurrentWindow->lastCharacter.causesNewline = false;
+	
+	pCurrentWindow->data = NULL;				// No window data yet
+	setCurrentWindowColorSequence(NULL, 1, 0);	// Setup the default color (Which is NULL, so that you know it is not set yet)
 }
 
 void hyperdisplay::setupHyperDisplay(uint16_t xSize, uint16_t ySize)
 {
 	xExt = xSize;
 	yExt = ySize;
-	setupDefaultWindow();
+
+	pCurrentWindow = &hyperdisplayDefaultWindow;	// Sets the current window to the default window structure
+	setWindowDefaults();							// Sets reasonable (uninitialized) values for the current window structure.
 }
 
 
