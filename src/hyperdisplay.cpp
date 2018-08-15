@@ -18,6 +18,31 @@ char_info_t hyperdisplayDefaultCharacter;
 		uint16_t hyperdisplayDefaultYloc[HYPERDISPLAY_DEFAULT_FONT_WIDTH*HYPERDISPLAY_DEFAULT_FONT_HEIGHT];
 	#endif
 #endif
+
+
+
+
+
+/////////////////////////////////////////////
+// 					Constructor
+/////////////////////////////////////////////
+hyperdisplay::hyperdisplay(uint16_t xSize, uint16_t ySize)
+{
+	xExt = xSize;
+	yExt = ySize;
+
+	pCurrentWindow = &hyperdisplayDefaultWindow;	// Sets the current window to the default window structure
+	setWindowDefaults();							// Sets reasonable (uninitialized) values for the current window structure.
+}
+
+
+
+
+
+
+/////////////////////////////////////////////
+// 				Display APIs
+/////////////////////////////////////////////
 // void hyperdisplay::hwpixel(int32_t x0, int32_t y0, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset)
 // {
 	// TIP: When you implement pixel for a derived class be aware that x0 and y0 are in terms of the current window.
@@ -204,6 +229,13 @@ void hyperdisplay::hwfillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16
 
 
 
+
+
+
+
+/////////////////////////////////////////////
+// 			Primitive Drawing Functions
+/////////////////////////////////////////////
 void hyperdisplay::pixel(int32_t x0, int32_t y0, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset)
 {
 	hyperdisplay_dim_check_t x0c = enforceLimits(&x0, false);				// if the dimension was off-window then it will now be on the edge. 
@@ -272,6 +304,11 @@ void hyperdisplay::fillFromArray(int32_t x0, int32_t y0, int32_t x1, int32_t y1,
 	if(y0c != hyperdisplay_dim_ok){ return; } 
 	if(y1c != hyperdisplay_dim_ok){ return; } 
 	if(data != NULL){ hwfillFromArray(x0, y0, x1, y1, numPixels, data); }
+}
+
+void hyperdisplay::fillWindow(color_t color)
+{
+	rectangle(0, 0, pCurrentWindow->xMax-pCurrentWindow->xMin, pCurrentWindow->yMax-pCurrentWindow->yMin, true, color, 1, 0, false, false);
 }
 
 
@@ -447,7 +484,10 @@ void hyperdisplay::setCurrentWindowColorSequence(color_t data, uint16_t colorCyc
 
 
 
-
+/////////////////////////////////////////////
+// 			Level 1 Drawing Functions
+/////////////////////////////////////////////
+#if HYPERDISPLAY_DRAWING_LEVEL > 0
 uint16_t hyperdisplay::line(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t width, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, bool reverseGradient)
 {
 	uint16_t absY, absX;
@@ -601,11 +641,9 @@ void hyperdisplay::circle(int32_t x0, int32_t y0, uint16_t radius, bool filled, 
 		}
 	}
 }
+#endif /* HYPERDISPLAY_DRAWING_LEVEL > 0 */
 
-void hyperdisplay::fillWindow(color_t color)
-{
-	rectangle(0, 0, pCurrentWindow->xMax-pCurrentWindow->xMin, pCurrentWindow->yMax-pCurrentWindow->yMin, true, color, 1, 0, false, false);
-}
+
 
 
 
@@ -1065,14 +1103,7 @@ void hyperdisplay::setWindowDefaults( void )
 	setCurrentWindowColorSequence(NULL, 1, 0);	// Setup the default color (Which is NULL, so that you know it is not set yet)
 }
 
-void hyperdisplay::setupHyperDisplay(uint16_t xSize, uint16_t ySize)
-{
-	xExt = xSize;
-	yExt = ySize;
 
-	pCurrentWindow = &hyperdisplayDefaultWindow;	// Sets the current window to the default window structure
-	setWindowDefaults();							// Sets reasonable (uninitialized) values for the current window structure.
-}
 
 
 

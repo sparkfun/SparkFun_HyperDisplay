@@ -12,11 +12,25 @@ they will require additional inclusions
 */ 
 
 /*
-USE_MATH: 
-0 - disables mathematical drawing
-1 - enables mathematical drawing, includes math.h and defines a mathematical object type
+DRAWING_LEVEL: 
+0 - includes only primitive drawing functions:
+	- pixel
+	- xline
+	- yline
+	- rectangle
+	- fillFromArray
+	- fillWindow
+
+1 - level 0 and: 
+	- line
+	- polygon
+	- circle
+
+2 - level 1 and:
+	-
+
 */
-#define HYPERDISPLAY_USE_MATH 0	
+#define HYPERDISPLAY_DRAWING_LEVEL 4	
 
 
 /*
@@ -33,3 +47,10 @@ INCLUDE_DEFAULT_FONT
 1 - do include the default 5x7 program memory font (to NOT save on program space)
 */
 #define HYPERDISPLAY_INCLUDE_DEFAULT_FONT 1
+
+/*
+USE_MATH: 
+0 - disables mathematical drawing
+1 - enables mathematical drawing, includes math.h and defines a mathematical object type
+*/
+#define HYPERDISPLAY_USE_MATH 0	
