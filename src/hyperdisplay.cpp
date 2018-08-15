@@ -325,26 +325,18 @@ void hyperdisplay::setCurrentWindowColorSequence(color_t data, uint16_t colorCyc
 		size_t numWritten = 0;
 		getCharInfo(val, &hyperdisplayDefaultCharacter);
 
-		Serial.print("Num pixels: "); Serial.println(hyperdisplayDefaultCharacter.numPixels);
-
 		// Check to see if current cursor coordinates work for the requested character
 		if(((pCurrentWindow->xMax - pCurrentWindow->xMin) - hyperdisplayDefaultCharacter.xDim) < pCurrentWindow->cursorX)
 		{
 			if(((pCurrentWindow->yMax - pCurrentWindow->yMin) - hyperdisplayDefaultCharacter.yDim) < pCurrentWindow->cursorY)
 			{
-				Serial.println("Returning");
 				return numWritten;	// return because there is no more room in the x or y directions of the window
 			}
-
-			Serial.println("Got here");
-
 			pCurrentWindow->cursorX = pCurrentWindow->xReset;				// Put x cursor back to reset location
 			pCurrentWindow->cursorY += hyperdisplayDefaultCharacter.yDim;	// Move the cursor down by the size of the character
 		}
 
-		Serial.println("here I am");
-
-		// // Now write the character
+		// Now write the character
 		if(hyperdisplayDefaultCharacter.show)
 		{
 			//fillFromArray(pCurrentWindow->cursorX, pCurrentWindow->cursorY, pCurrentWindow->cursorX+hyperdisplayDefaultCharacter.xDim, pCurrentWindow->cursorY+hyperdisplayDefaultCharacter.yDim, hyperdisplayDefaultCharacter.numPixels, hyperdisplayDefaultCharacter.data);
