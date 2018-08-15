@@ -181,11 +181,11 @@ void hyperdisplay::hwfillFromArray(uint16_t x0, uint16_t y0, uint16_t x1, uint16
 	if(y0 > y1){ SWAP_COORDS(y0, y1); }
 
 	uint32_t pixel_count = 0;
-	for(uint16_t x = x0; x < x1; x++)
+	for(uint16_t x = x0; x <= x1; x++)
 	{
-		for(uint16_t y = y0; y < y1; y++)
+		for(uint16_t y = y0; y <= y1; y++)
 		{
-			pixel(x, y, getOffsetColor(data, pixel_count++));
+			hwpixel(x, y, getOffsetColor(data, pixel_count++));
 			if(pixel_count >= numPixels)
 			{
 				pixel_count = 0;
