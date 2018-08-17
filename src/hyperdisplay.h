@@ -3,7 +3,7 @@
 SparkFun Master Display Library
 
 Created: July 2018
-Modified: July 2018
+Modified: August 2018
 
 Authors:
 	Ciara Jekel
@@ -16,7 +16,7 @@ Purpose: This library standardizes interfaces to displays of many types.
 
 */
 
-#ifndef HYPERDISPLAY_H              // We are going to need a cooler name than 'display' in the long run
+#ifndef HYPERDISPLAY_H             		
 #define HYPERDISPLAY_H
 
 #include <Arduino.h>
@@ -134,7 +134,7 @@ class hyperdisplay : public Print{
 	        void 		polygon(int32_t x[], int32_t y[], uint8_t numSides, uint16_t width = 1, color_t data = NULL, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool reverseGradient = false);
 	        void 		circle(int32_t x0, int32_t y0, uint16_t radius, bool filled = false, color_t data = NULL, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool reverseGradient = false); 
 		#endif /* HYPERDISPLAY_DRAWING_LEVEL > 0 */                                                           																									
-    
+
 
 		#if HYPERDISPLAY_DRAWING_LEVEL > 1
         	// void draw something complex;
@@ -142,7 +142,7 @@ class hyperdisplay : public Print{
 
 
         // Printing
-        virtual size_t write(uint8_t val);                                      // This is the implementation of write that is inherited from, left as virtual to be implementation specific
+        virtual size_t write(uint8_t val);                                      	// This is the implementation of write that is inherited from print.h, left as virtual to be implementation specific
 		#if HYPERDISPLAY_USE_PRINT		
         	virtual void getCharInfo(uint8_t character, char_info_t * pchar);       // A pure virtual function - you must implement this to be able to instantiate an object. The pchar pointer argument points to a valid char_info_t object that the function must fill out with the right values
 		#endif	/* HYPERDISPLAY_USE_PRINT */
@@ -153,17 +153,14 @@ class hyperdisplay : public Print{
 		#endif /* HYPERDISPLAY_USE_MATH */
 };
 
-
-
-
 // Some callback functions available to the user - they can be overriden with whatever implementation is useful at the time
 // Note that the pure virtual function pixel() does not have a callback - if it is needed it should be included in the derived class,
 // and that if the user provides implementation specific versions of the other primitive functions then these callbacks will not be
 // called, so if the functionality is desired it can be re-implemented.
-void hyperdisplayXLineCallback(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goLeft = false)                                                                                 __attribute__ ((weak));
-void hyperdisplayYLineCallback(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool goUp = false) 	                                                                                __attribute__ ((weak));
-void hyperdisplayRectangleCallback(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, bool filled = false, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0, bool gradientVertical = false, bool reverseGradient = false)    __attribute__ ((weak));
-void hyperdisplayFillFromArrayCallback(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t numPixels, color_t data)                                                                                                                            __attribute__ ((weak));
+void hyperdisplayXLineCallback(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, bool goLeft)                                                                       __attribute__ ((weak));
+void hyperdisplayYLineCallback(int32_t x0, int32_t y0, uint16_t len, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, bool goUp) 	                                                                    __attribute__ ((weak));
+void hyperdisplayRectangleCallback(int32_t x0, int32_t y0, int32_t x1, int32_t y1, color_t data, bool filled, uint16_t colorCycleLength, uint16_t startColorOffset, bool gradientVertical, bool reverseGradient)    		__attribute__ ((weak));
+void hyperdisplayFillFromArrayCallback(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t numPixels, color_t data)                                                                                                    __attribute__ ((weak));
 
 #endif /* HYPERDISPLAY_H */
 
