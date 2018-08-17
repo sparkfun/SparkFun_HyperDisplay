@@ -1,3 +1,29 @@
+/*
+  HyperDisplay Example 1:  simpleBareNecessities 
+  By: Owen Lye
+  SparkFun Electronics
+  Date: August 17, 2018
+  License: This code is public domain but you buy me a beer 
+  if you use this and we meet someday (Beerware license).
+
+  Don't expect too much from this code: it just prints a nice message to the serial terminal...
+  However it demonstrates instantiation of a class derived from the HyperDisplay library. Once
+  you implement the functions:
+  - getOffsetColor(color_t base, uint32_t numPixels);
+  - hwpixel(uint16_t x0, uint16_t y0, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset);
+
+  Then you will be able to use all these standardized functions (and more to come in the near future!)
+  - xline
+  - yline
+  - rectangle
+  - fillFromArray
+  - fillWindow
+  - line
+  - polygon
+  - circle
+    
+*/
+
 #include "bareNecessities.h"
 
 #define NUM_PIX_X 64
