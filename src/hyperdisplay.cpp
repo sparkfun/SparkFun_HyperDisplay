@@ -7,12 +7,12 @@ header file: hyperdisplay.h
 
 
 
-#include "hyperdisplay.h"
+#include "hyperdisplay.h"					// Click here to get the library: http://librarymanager/SparkFun_HyperDisplay
 
 wind_info_t hyperdisplayDefaultWindow;		// This window is used by default so that the user does not have to worry about windows if they don't want to
-char_info_t hyperdisplayDefaultCharacter;
+char_info_t hyperdisplayDefaultCharacter;	// The default character to use
 
-#if HYPERDISPLAY_USE_PRINT                  // 
+#if HYPERDISPLAY_USE_PRINT
     #if HYPERDISPLAY_INCLUDE_DEFAULT_FONT   
 		uint16_t hyperdisplayDefaultXloc[HYPERDISPLAY_DEFAULT_FONT_WIDTH*HYPERDISPLAY_DEFAULT_FONT_HEIGHT];
 		uint16_t hyperdisplayDefaultYloc[HYPERDISPLAY_DEFAULT_FONT_WIDTH*HYPERDISPLAY_DEFAULT_FONT_HEIGHT];

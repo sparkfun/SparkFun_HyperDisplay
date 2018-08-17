@@ -24,7 +24,7 @@
     
 */
 
-#include "bareNecessities.h"
+#include "bareNecessities.h"  // Click here to get the library: http://librarymanager/SparkFun_HyperDisplay
 
 #define NUM_PIX_X 64
 #define NUM_PIX_Y 64
