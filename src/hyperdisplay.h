@@ -102,7 +102,7 @@ class hyperdisplay : public Print{
         uint16_t 		lineHighReverse(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t width, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset);
         uint16_t 		lineLowReverse(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t width, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset);
     	void 			circle_Bresenham(int32_t x0, int32_t y0, uint16_t radius, color_t color, bool fill);
-		void 			circle_midpoint(uint8_t x0, uint8_t y0, uint8_t radius, color_t color, bool fill);
+		void 			circle_midpoint(int32_t x0, int32_t y0, uint16_t radius, color_t color, bool fill);
 		void 			circle_eight(uint8_t xc, uint8_t yc, int16_t dx, int16_t dy, color_t color, bool fill);
 		#endif /* HYPERDISPLAY_DRAWING_LEVEL > 0 */ 
 

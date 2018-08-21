@@ -385,7 +385,7 @@ void hyperdisplay::setCurrentWindowColorSequence(color_t data, uint16_t colorCyc
 			numWritten = 1;
 
 			// Now advance the cursor in the x direction so that you don't overwrite the work you just did
-			pCurrentWindow->cursorX += hyperdisplayDefaultCharacter.xDim;
+			pCurrentWindow->cursorX += hyperdisplayDefaultCharacter.xDim + 1;
 		}
 
 		pCurrentWindow->lastCharacter = hyperdisplayDefaultCharacter;	// Set this character as the previous character - the info will persist because this is direct 
@@ -904,9 +904,9 @@ uint16_t hyperdisplay::lineLowReverse(int32_t x0, int32_t y0, int32_t x1, int32_
 void hyperdisplay::circle_Bresenham(int32_t x0, int32_t y0, uint16_t radius, color_t color, bool fill)
 {
 	// Thanks to the tutorial here: https://www.geeksforgeeks.org/bresenhams-circle-drawing-algorithm/
-	uint8_t dx = 0;
-	uint8_t dy = radius;
-	uint8_t D = 3 - 2*radius;
+	int32_t dx = 0;
+	int32_t dy = radius;
+	int32_t D = 3 - 2*radius;
 
 	if(fill)
 	{
@@ -939,7 +939,7 @@ void hyperdisplay::circle_Bresenham(int32_t x0, int32_t y0, uint16_t radius, col
 	}
 }
 
-void hyperdisplay::circle_midpoint(uint8_t x0, uint8_t y0, uint8_t radius, color_t color, bool fill)
+void hyperdisplay::circle_midpoint(int32_t x0, int32_t y0, uint16_t radius, color_t color, bool fill)
 {
 	// Thanks to the tutorial here: https://www.geeksforgeeks.org/mid-point-circle-drawing-algorithm/
     uint8_t dx = radius;
