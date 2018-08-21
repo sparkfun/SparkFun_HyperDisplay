@@ -459,7 +459,11 @@ void hyperdisplay::setCurrentWindowColorSequence(color_t data, uint16_t colorCyc
 #endif /* HYPERDISPLAY_USE_PRINT */
 
 
-
+void hyperdisplay::setTextCursor(int32_t x0, int32_t y0, wind_info_t * window){
+	if(!window) window = pCurrentWindow; //default to current
+    window->cursorX = x0;               	// Where the cursor is currently in window-coordinates
+    window->cursorY = y0;               	// Where the cursor is currently in window-coordinates
+}
 
 
 

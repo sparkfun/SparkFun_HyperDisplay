@@ -146,6 +146,7 @@ class hyperdisplay : public Print{
 		#if HYPERDISPLAY_USE_PRINT		
         	virtual void getCharInfo(uint8_t character, char_info_t * pchar);       // A pure virtual function - you must implement this to be able to instantiate an object. The pchar pointer argument points to a valid char_info_t object that the function must fill out with the right values
 		#endif	/* HYPERDISPLAY_USE_PRINT */
+        void setTextCursor(int32_t x0, int32_t y0, wind_info_t * window = NULL);
 
         // Mathematical drawing tools
 		#if HYPERDISPLAY_USE_MATH
