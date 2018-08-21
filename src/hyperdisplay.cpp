@@ -274,8 +274,8 @@ void hyperdisplay::yline(int32_t x0, int32_t y0, uint16_t len, color_t data, uin
 	if(x0c != hyperdisplay_dim_ok){ return; }											// Don't do it if x was wrong
 	if((y0c == hyperdisplay_dim_low) && (y1c == hyperdisplay_dim_low)){ return; }		// Don't do it if y0 and y1 were both low (would cause phantom dot at yMin)
 	if((y0c == hyperdisplay_dim_high) && (y1c == hyperdisplay_dim_high)){ return; }		// Don't do it if y0 and y1 were both high (would cause phantom dot at yMax)
-	if(data == NULL){ hwxline(x0, y0, len, pCurrentWindow->currentSequenceData, pCurrentWindow->currentColorCycleLength, pCurrentWindow->currentColorOffset, goUp); }
-	else{ hwxline(x0, y0, len, data, colorCycleLength, startColorOffset, goUp); }
+	if(data == NULL){ hwyline(x0, y0, len, pCurrentWindow->currentSequenceData, pCurrentWindow->currentColorCycleLength, pCurrentWindow->currentColorOffset, goUp); }
+	else{ hwyline(x0, y0, len, data, colorCycleLength, startColorOffset, goUp); }
 }
 
 void hyperdisplay::rectangle(int32_t x0, int32_t y0, int32_t x1, int32_t y1, bool filled, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset, bool gradientVertical, bool reverseGradient)
@@ -529,6 +529,7 @@ uint16_t hyperdisplay::line(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint
 	{
     	if( y0 > y1 )
       	{
+
       		if(reverseGradient)
       		{
       			return lineHighReverse(x1, y1, x0, y0, width, data, colorCycleLength, startColorOffset);
@@ -813,8 +814,6 @@ uint16_t hyperdisplay::lineLowNorm(int32_t x0, int32_t y0, int32_t x1, int32_t y
 		consecutive++;
 		if( D > 0 )
 		{
-			Serial.print("x: "); Serial.print(x); Serial.print(", y: "); Serial.print(y); Serial.print(", c: "); Serial.println(consecutive);
-
 			if(width == 1)
 			{
 				xline(x-consecutive+1, y, consecutive, data, colorCycleLength, startColorOffset, false);
