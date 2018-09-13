@@ -5,8 +5,6 @@ header file: hyperdisplay.h
 */
 
 
-
-
 #include "hyperdisplay.h"					// Click here to get the library: http://librarymanager/SparkFun_HyperDisplay
 
 wind_info_t hyperdisplayDefaultWindow;		// This window is used by default so that the user does not have to worry about windows if they don't want to
