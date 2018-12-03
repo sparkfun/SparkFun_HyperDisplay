@@ -38,16 +38,17 @@ Purpose: This library standardizes interfaces to displays of many types.
     #endif
 #endif
 
-
-#define SWAP_COORDS(a, b) uint16_t temp = a; \
-              						  a = b; \
-              					   b = temp; \
-
 template <typename T>
-T swap(T* i1, T* i2){
+void swap(T* i1, T* i2){
 	T s = *i1;
 	*i1 = *i2;
 	*i2 = s;
+}
+
+template <typename T>
+T uabs(T i1, T i2){
+	if(i1 >= i2){ return i1-i2; }
+	else{ return i2-i1; }
 }
 
 typedef double hd_extent_t;
