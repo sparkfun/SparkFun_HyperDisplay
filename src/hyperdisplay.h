@@ -23,7 +23,7 @@ Purpose: This library standardizes interfaces to displays of many types.
 
 #ifndef HYPERDISPLAY_HAVE_CUSTOM_CONFIG
 #warning "No custom configuration supplied for hyperdisplay, using default"
-#include "util\hyperdisplay_default_conf.h" // The default configuration in case one is not provided by the user
+#include "util/hyperdisplay_default_conf.h" // The default configuration in case one is not provided by the user
 #endif
 
 #if HYPERDISPLAY_USE_MATH                   // Extra special math functions for later
