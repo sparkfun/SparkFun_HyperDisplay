@@ -30,6 +30,10 @@ Purpose: This library standardizes interfaces to displays of many types.
     #include <math.h>
 #endif
 
+#if HYPERDISPLAY_USE_RAY_TRACING			
+	#include "util/SparkFun_2DRayTracing.h"
+#endif
+
 #if HYPERDISPLAY_USE_PRINT                  // 
     #if HYPERDISPLAY_INCLUDE_DEFAULT_FONT   
         #include "util/font5x7.h"
@@ -46,15 +50,15 @@ void swap(T* i1, T* i2){
 }
 
 template <typename T>
-T uabs(T i1, T i2){
-	if(i1 >= i2){ return i1-i2; }
-	else{ return i2-i1; }
+T uabslen(T i1, T i2){
+	if(i1 >= i2){ return i1-i2 + 1; }
+	else{ return i2-i1 + 1; }
 }
 
 typedef double hd_extent_t;
 typedef uint16_t hd_hw_extent_t;
 typedef uint32_t hd_colors_t;   // Represents the limiting value of how many colors can be stored inside a color cycle
-typedef uint32_t hd_pixels_t;
+typedef hd_colors_t hd_pixels_t;
 
 
 typedef void * color_t; 
@@ -130,7 +134,7 @@ class hyperdisplay : public Print{
         virtual void    hwxline(hd_hw_extent_t x0, hd_hw_extent_t y0, hd_hw_extent_t len, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool goLeft = false);            // Default implementation provided, suggested to overwrite
         virtual void    hwyline(hd_hw_extent_t x0, hd_hw_extent_t y0, hd_hw_extent_t len, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool goUp = false);          // Default implementation provided, suggested to overwrite
         virtual void 	hwrectangle(hd_hw_extent_t x0, hd_hw_extent_t y0, hd_hw_extent_t x1, hd_hw_extent_t y1, bool filled = false, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool reverseGradient = false, bool gradientVertical = false); 
-        virtual void 	hwfillFromArray(hd_hw_extent_t x0, hd_hw_extent_t y0, hd_hw_extent_t x1, hd_hw_extent_t y1, hd_pixels_t numPixels, color_t data);																// Default implementation provided, suggested to overwrite
+        virtual void 	hwfillFromArray(hd_hw_extent_t x0, hd_hw_extent_t y0, hd_hw_extent_t x1, hd_hw_extent_t y1, color_t data = NULL, hd_pixels_t numPixels = 0,  bool Vh = false );																// Default implementation provided, suggested to overwrite
 
     public:
     // Parameters
@@ -143,8 +147,8 @@ class hyperdisplay : public Print{
         void 		xline(hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool goLeft = false); 
         void 		yline(hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool goUp = false);
         void 		rectangle(hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, bool filled = false, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool reverseGradient = false, bool gradientVertical = false); 
-        void 		fillFromArray(hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, hd_pixels_t numPixels, color_t data = NULL); 
-        void 		fillWindow(color_t color);  
+        void 		fillFromArray(hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, color_t data = NULL, hd_pixels_t numPixels = 0, bool Vh = false); 
+        void 		fillWindow(color_t color, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0);  
 
 		#if HYPERDISPLAY_DRAWING_LEVEL > 0
         // Level 1 drawing functions - window coordinates
@@ -157,6 +161,10 @@ class hyperdisplay : public Print{
 		#if HYPERDISPLAY_DRAWING_LEVEL > 1
         	// void draw something complex;
 		#endif /* HYPERDISPLAY_DRAWING_LEVEL > 1 */      
+
+		#if HYPERDISPLAY_USE_RAY_TRACING
+	        void 		filledPolygon(sf2drt_polygon* poly, uint16_t width = 1, bool filled = false, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool reverseGradient = false);
+	    #endif /* HYPERDISPLAY_USE_RAYTRACING */
 
 
         // Printing

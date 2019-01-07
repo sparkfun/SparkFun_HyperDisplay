@@ -54,3 +54,10 @@ USE_MATH:
 1 - enables mathematical drawing, includes math.h and defines a mathematical object type
 */
 #define HYPERDISPLAY_USE_MATH 0	
+
+/*
+USE_RAY_TRACING
+0 - disables ray tracing functions like filled polygon
+1 - enables ray tracing functions by including SparkFun 2D Ray Tracing
+*/
+#define HYPERDISPLAY_USE_RAY_TRACING 1
