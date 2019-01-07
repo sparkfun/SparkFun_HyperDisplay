@@ -113,7 +113,7 @@ class hyperdisplay : public Print{
 
         // User-defined utilities
         virtual color_t getOffsetColor(color_t base, uint32_t numPixels) = 0;  									// This pure virtual function is required to get the correct pointer after incrementing by a number of pixels (which could have any amount of data behind them depending on how the color is stored)
-        virtual void 	setWindowDefaults(wind_info_t * pwindow);                         						// Fills out the default window structure and associates it to the current window  // User can override this function        
+        virtual void 	setWindowDefaults(wind_info_t* pwindow);                         						// Fills out the default window structure and associates it to the current window  // User can override this function        
 
 		#if HYPERDISPLAY_DRAWING_LEVEL > 0
     	// Protected drawing functions
