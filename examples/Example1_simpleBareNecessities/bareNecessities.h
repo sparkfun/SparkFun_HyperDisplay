@@ -14,7 +14,7 @@ Authors: Owen Lyke
 ////////////////////////////////////////////////////////////
 //							Includes    				  //
 ////////////////////////////////////////////////////////////
-#include "hyperdisplay.h"										// Click here to get the library: http://librarymanager/SparkFun_HyperDisplay
+#include "hyperdisplay.h"										// Click here to get the library: http://librarymanager/All#SparkFun_HyperDisplay
 
 ////////////////////////////////////////////////////////////
 //							Defines     				  //
