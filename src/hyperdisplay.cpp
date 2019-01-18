@@ -545,7 +545,6 @@ uint16_t hyperdisplay::line(hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_e
 	{
     	if( y0 > y1 )
       	{
-
       		if(reverseGradient)
       		{
       			return lineHighReverse(x1, y1, x0, y0, width, data, colorCycleLength, startColorOffset);
@@ -574,8 +573,8 @@ void hyperdisplay::polygon(hd_extent_t x[], hd_extent_t y[], uint8_t numSides, u
 	uint8_t indi = 0;
 	int32_t numWritten = 0; 
 
-	int32_t dx;
-	int32_t dy;
+	hd_extent_t dx;
+	hd_extent_t dy;
 	bool rev = reverseGradient;
 
 	startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 0); // Condition for safety

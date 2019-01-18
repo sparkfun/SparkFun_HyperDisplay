@@ -109,7 +109,7 @@ class hyperdisplay : public Print{
        
 
     public: // temporary
-        void 						setCurrentWindowColorSequence(color_t data, uint16_t colorCycleLength, uint16_t startColorOffset);	// Sets up a color sequence for the current window to default to
+        void 						setCurrentWindowColorSequence(color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0);	// Sets up a color sequence for the current window to default to
 
         // User-defined utilities
         virtual color_t getOffsetColor(color_t base, uint32_t numPixels) = 0;  									// This pure virtual function is required to get the correct pointer after incrementing by a number of pixels (which could have any amount of data behind them depending on how the color is stored)
@@ -148,7 +148,7 @@ class hyperdisplay : public Print{
         void 		yline(hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool goUp = false);
         void 		rectangle(hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, bool filled = false, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool reverseGradient = false, bool gradientVertical = false); 
         void 		fillFromArray(hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, color_t data = NULL, hd_pixels_t numPixels = 0, bool Vh = false); 
-        void 		fillWindow(color_t color, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0);  
+        void 		fillWindow(color_t color = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0);  
 
 		#if HYPERDISPLAY_DRAWING_LEVEL > 0
         // Level 1 drawing functions - window coordinates
