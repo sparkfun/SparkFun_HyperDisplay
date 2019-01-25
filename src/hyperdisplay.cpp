@@ -12,8 +12,8 @@ char_info_t hyperdisplayDefaultCharacter;	// The default character to use
 
 #if HYPERDISPLAY_USE_PRINT
     #if HYPERDISPLAY_INCLUDE_DEFAULT_FONT   
-		hd_extent_t hyperdisplayDefaultXloc[HYPERDISPLAY_DEFAULT_FONT_WIDTH*HYPERDISPLAY_DEFAULT_FONT_HEIGHT];
-		hd_extent_t hyperdisplayDefaultYloc[HYPERDISPLAY_DEFAULT_FONT_WIDTH*HYPERDISPLAY_DEFAULT_FONT_HEIGHT];
+		hd_font_extent_t hyperdisplayDefaultXloc[HYPERDISPLAY_DEFAULT_FONT_WIDTH*HYPERDISPLAY_DEFAULT_FONT_HEIGHT];
+		hd_font_extent_t hyperdisplayDefaultYloc[HYPERDISPLAY_DEFAULT_FONT_WIDTH*HYPERDISPLAY_DEFAULT_FONT_HEIGHT];
 	#endif
 #endif
 
@@ -410,7 +410,7 @@ void hyperdisplay::setCurrentWindowColorSequence(color_t data, uint16_t colorCyc
 	}
 
 #if HYPERDISPLAY_INCLUDE_DEFAULT_FONT 			        
-		void hyperdisplay::getCharInfo(uint8_t character, character_info * character_info) 
+		void hyperdisplay::getCharInfo(uint8_t character, char_info_t * character_info) 
 		{
 			// This is the most basic font implementation, it only prints a monochrome character using the first color of the current window's current color sequence
 			// If you want any more font capabilities then you should re-implement this function :D
@@ -458,8 +458,8 @@ void hyperdisplay::setCurrentWindowColorSequence(color_t data, uint16_t colorCyc
 					if(values[indi] & (0x01 << indj))
 					{
 						character_info->numPixels++;
-						*(character_info->xLoc + n) = indi;
-						*(character_info->yLoc + n) = indj;
+						*(character_info->xLoc + n) = (hd_font_extent_t)indi;
+						*(character_info->yLoc + n) = (hd_font_extent_t)indj;
 						n++;
 					}
 				}

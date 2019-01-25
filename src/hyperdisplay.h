@@ -56,22 +56,23 @@ T uabslen(T i1, T i2){
 }
 
 typedef double hd_extent_t;
-typedef uint16_t hd_hw_extent_t;
-typedef uint32_t hd_colors_t;   // Represents the limiting value of how many colors can be stored inside a color cycle
+typedef uint16_t hd_hw_extent_t;	// Represents the limit for the width of height of the display in pixels
+typedef uint8_t hd_font_extent_t; 	// Represents the limiting value for width or height of font characters
+typedef uint32_t hd_colors_t;   	// Represents the limiting value of how many colors can be stored inside a color cycle
 typedef hd_colors_t hd_pixels_t;
 
 
 typedef void * color_t; 
 
 typedef struct character_info{
-	color_t         data;		           		// The data that is used to fill the character frame
-	hd_extent_t*  	xLoc;		       			// x location data relative to the upper left-corner of the character area
-	hd_extent_t*  	yLoc;		       			// y location data relative to the upper left-corner of the character area
-    hd_extent_t   	xDim;                  		// The maximum value of xLoc
-    hd_extent_t    	yDim;                  		// The maximum value of yLoc - also the number of pixels to move down for characters that cause new lines
-    hd_pixels_t    	numPixels;           		// The number of color_t types that pdata points to
-	bool            show;				    	// Whether or not to actually show the character
-    bool            causesNewline;				// This indicates if the given chracter is meant to cause a carriage return (newline)
+	color_t            	data;		           		// The data that is used to fill the character frame
+	hd_font_extent_t*  	xLoc;		       			// x location data relative to the upper left-corner of the character area
+	hd_font_extent_t*	yLoc;		       			// y location data relative to the upper left-corner of the character area
+    hd_font_extent_t    xDim;                  		// The maximum value of xLoc
+    hd_font_extent_t    yDim;                  		// The maximum value of yLoc - also the number of pixels to move down for characters that cause new lines
+    hd_pixels_t    		numPixels;           		// The number of color_t types that pdata points to
+	bool            	show;				    	// Whether or not to actually show the character
+    bool            	causesNewline;				// This indicates if the given chracter is meant to cause a carriage return (newline)
 }char_info_t;                           	// Character information structure for placing pixels in a window
 
 typedef struct window_info{
