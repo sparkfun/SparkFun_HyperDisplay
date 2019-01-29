@@ -51,6 +51,7 @@ void hyperdisplay::hwxline(hd_hw_extent_t x0, hd_hw_extent_t y0, hd_hw_extent_t 
 {
 	// Note: color_t data is always a void pointer. You need to make sure that it points at the correct color type with enough elements.
 	// In this case the correct number of elements is colorCycleLength
+	if(data == NULL){ return; }
 	if(colorCycleLength == 0){ return; }
 
 	startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 0);	// This line is needed to condition the user's input start color offset because it could be greater than the cycle length
@@ -81,6 +82,7 @@ void hyperdisplay::hwyline(hd_hw_extent_t x0, hd_hw_extent_t y0, hd_hw_extent_t 
 {
 	// Note: color_t data is always a void pointer. You need to make sure that it points at the correct color type with enough elements.
 	// In this case the correct number of elements is colorCycleLength
+	if(data == NULL){ return; }
 	if(colorCycleLength == 0){ return; }
 
 	startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 0);	// This line is needed to condition the user's input start color offset because it could be greater than the cycle length
@@ -109,6 +111,7 @@ void hyperdisplay::hwyline(hd_hw_extent_t x0, hd_hw_extent_t y0, hd_hw_extent_t 
 
 void hyperdisplay::hwrectangle(hd_hw_extent_t x0, hd_hw_extent_t y0, hd_hw_extent_t x1, hd_hw_extent_t y1, bool filled, color_t data, hd_colors_t colorCycleLength, hd_colors_t startColorOffset, bool reverseGradient, bool gradientVertical)
 {
+	if(data == NULL){ return; }
 	if(colorCycleLength == 0){ return; }
 
 	startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 0);	// This line is needed to condition the user's input start color offset because it could be greater than the cycle length
@@ -186,14 +189,15 @@ void hyperdisplay::hwrectangle(hd_hw_extent_t x0, hd_hw_extent_t y0, hd_hw_exten
 
 void hyperdisplay::hwfillFromArray(hd_hw_extent_t x0, hd_hw_extent_t y0, hd_hw_extent_t x1, hd_hw_extent_t y1, color_t data, hd_pixels_t numPixels, bool Vh)
 {
+	if(data == NULL){ return; }
 	hd_pixels_t startColorOffset = 0;
 
 	if( Vh )
 	{
 		// Vertical lines first format
-		for(hd_hw_extent_t y = y0; y <= y1; y++)
+		for(hd_hw_extent_t x = x0; x <= x1; x++)
 		{
-			for(hd_hw_extent_t x = x0; x <= x1; x++)
+			for(hd_hw_extent_t y = y0; y <= y1; y++)
 			{
 				color_t value = getOffsetColor(data, startColorOffset);
 				startColorOffset = getNewColorOffset(numPixels, startColorOffset, 1);
@@ -205,9 +209,9 @@ void hyperdisplay::hwfillFromArray(hd_hw_extent_t x0, hd_hw_extent_t y0, hd_hw_e
 	else
 	{
 		// Horizontal lines first format
-		for(hd_hw_extent_t x = x0; x <= x1; x++)
+		for(hd_hw_extent_t y = y0; y <= y1; y++)
 		{
-			for(hd_hw_extent_t y = y0; y <= y1; y++)
+			for(hd_hw_extent_t x = x0; x <= x1; x++)
 			{
 				color_t value = getOffsetColor(data, startColorOffset);
 				startColorOffset = getNewColorOffset(numPixels, startColorOffset, 1);
@@ -224,10 +228,260 @@ void hyperdisplay::hwfillFromArray(hd_hw_extent_t x0, hd_hw_extent_t y0, hd_hw_e
 
 
 
+// Buffer writing functions - all buffers areread left-to-right and top to bottom. Width and height are specified in the associated window's settings. Coordinates are window coordinates
+
+hd_pixels_t		hyperdisplay::wToPix( wind_info_t* wind, hd_hw_extent_t x0, hd_hw_extent_t y0)
+{
+	if(wind == NULL){ return 0; } // Ideally we would have a better solution here...
+	hd_hw_extent_t width = uabslen <hd_hw_extent_t> (wind->xMax, wind->xMin);
+	hd_pixels_t pixOffst = x0 + (y0 * width);
+	return pixOffst;
+}
+
+void	hyperdisplay::swpixel( hd_extent_t x0, hd_extent_t y0, color_t data, hd_colors_t colorCycleLength, hd_colors_t startColorOffset)
+{
+	if(data == NULL){ return; }
+	if(colorCycleLength == 0){ return; }
+
+	startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 0);	// This line is needed to condition the user's input start color offset because it could be greater than the cycle length
+	color_t value = getOffsetColor(data, startColorOffset);
+
+	hd_hw_extent_t x0w = (hd_hw_extent_t)x0;	// Cast to hw extent type to be sure of integer values
+	hd_hw_extent_t y0w = (hd_hw_extent_t)y0;
+
+	hd_pixels_t pixOffst = wToPix(pCurrentWindow, x0, y0);			// It was already ensured that this will be in range 
+	color_t dest = getOffsetColor(pCurrentWindow->data, pixOffst);	// Rely on the user's definition of a pixel's width in memory
+	uint32_t len = (uint32_t)getOffsetColor(0x00, 1);				// Getting the offset from zero for one pixel tells us how many bytes to copy
+
+	memcpy((void*)dest, (void*)value, (size_t)len);		// Copy data into the window's buffer
+}
+
+void	hyperdisplay::swxline( hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_t data, hd_colors_t colorCycleLength, hd_colors_t startColorOffset, bool goLeft)
+{
+	Serial.println("SW xline");
+
+	// if(data == NULL){ return; }
+	// if(colorCycleLength == 0){ return; }
+
+	// startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 0);	// This line is needed to condition the user's input start color offset because it could be greater than the cycle length
+	// color_t value = getOffsetColor(data, startColorOffset);
+
+	// hd_hw_extent_t x0w = (hd_hw_extent_t)x0;	// Cast to hw extent type to be sure of integer values
+	// hd_hw_extent_t y0w = (hd_hw_extent_t)y0;
+	// hd_hw_extent_t lenw = (hd_hw_extent_t)len;
+
+	// hd_pixels_t pixOffst = wToPix(pCurrentWindow, x0, y0);			// It was already ensured that this will be in range 
+	// color_t dest = getOffsetColor(pCurrentWindow->data, pixOffst);	// Rely on the user's definition of a pixel's width in memory
+	// uint32_t bpp = (uint32_t)getOffsetColor(0x00, 1);				// Getting the offset from zero for one pixel tells us how many bytes to copy
+
+	// while(lenw > 0){												// Because of the checks already performed we know that len will fit into this row
+	// 	hd_hw_extent_t num2copy = min( (colorCycleLength-startColorOffset), lenw);			// Determine how many to copy this time
+	// 	memcpy((void*) dest, (void*)value, bpp*num2copy );									// Copy them
+	// 	startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, num2copy);	// Figure out new start offset
+	// 	value = getOffsetColor(data, startColorOffset);										// Change the pointer to the color cycle
+	// 	dest = (((uint8_t*)dest) + bpp*num2copy); 											// Increment the destination pointer 
+	// 	lenw -= num2copy;																	// Decrement the reamining number of bytes
+	// }
+
+	if(data == NULL){ return; }
+	if(colorCycleLength == 0){ return; }
+
+	startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 0);	// This line is needed to condition the user's input start color offset because it could be greater than the cycle length
+	color_t value = getOffsetColor(data, startColorOffset);
+
+	if(goLeft)
+	{
+		for(hd_hw_extent_t indi = 0; indi < len; indi++)
+		{
+			swpixel(x0 - indi, y0, value, 1, 0);
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
+			value = getOffsetColor(data, startColorOffset);
+		}
+	}
+	else
+	{
+		for(hd_hw_extent_t indi = 0; indi < len; indi++)
+		{
+			swpixel(x0 + indi, y0, value, 1, 0);
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
+			value = getOffsetColor(data, startColorOffset);
+		}
+	}
+}
+
+void	hyperdisplay::swyline( hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_t data, hd_colors_t colorCycleLength, hd_colors_t startColorOffset, bool goUp)
+{
+	Serial.println("SW yline");
+
+	// if(data == NULL){ return; }
+	// if(colorCycleLength == 0){ return; }
+
+	// startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 0);	// This line is needed to condition the user's input start color offset because it could be greater than the cycle length
+	// color_t value = getOffsetColor(data, startColorOffset);
+
+	// hd_hw_extent_t x0w = (hd_hw_extent_t)x0;	// Cast to hw extent type to be sure of integer values
+	// hd_hw_extent_t y0w = (hd_hw_extent_t)y0;
+	// hd_hw_extent_t lenw = (hd_hw_extent_t)len;
+
+	// while(lenw > 0){												// Because of the checks already performed we know that len will fit into this column
+	// 	swpixel( x0, y0, color_t data, hd_colors_t colorCycleLength, hd_colors_t startColorOffset)
+	// 	startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, num2copy);	// Figure out new start offset
+	// 	value = getOffsetColor(data, startColorOffset);										// Change the pointer to the color cycle
+	// 	lenw--;																	// Decrement the reamining number of bytes
+
+	// }
+
+	if(data == NULL){ return; }
+	if(colorCycleLength == 0){ return; }
+
+	startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 0);	// This line is needed to condition the user's input start color offset because it could be greater than the cycle length
+	color_t value = getOffsetColor(data, startColorOffset);
+
+	if(goUp)
+	{
+		for(hd_hw_extent_t indi = 0; indi < len; indi++)
+		{	
+			swpixel(x0, y0 - indi, value, 1, 0);
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
+			value = getOffsetColor(data, startColorOffset);
+		}
+	}
+	else
+	{
+		for(hd_hw_extent_t indi = 0; indi < len; indi++)
+		{
+			swpixel(x0, y0 + indi, value, 1, 0);
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
+			value = getOffsetColor(data, startColorOffset);
+		}
+	}
+}
+
+void	hyperdisplay::swrectangle( hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, bool filled, color_t data, hd_colors_t colorCycleLength, hd_colors_t startColorOffset, bool reverseGradient, bool gradientVertical)
+{
+	// if(data == NULL){ return; }
+	// if(colorCycleLength == 0){ return; }
+
+	Serial.println("SW rectangle");
 
 
+	if(data == NULL){ return; }
+	if(colorCycleLength == 0){ return; }
+
+	startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 0);	// This line is needed to condition the user's input start color offset because it could be greater than the cycle length
+
+	hd_hw_extent_t xlen = x1 - x0 + 1;
+	if(filled)
+	{
+		color_t value = getOffsetColor(data, startColorOffset);
+		if(gradientVertical)
+		{
+			if(reverseGradient)
+			{
+				for(uint16_t y = y1; y >= y0; y--)
+				{
+					swxline(x1, y, xlen, value, 1, 0, reverseGradient);
+					startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
+					value = getOffsetColor(data, startColorOffset);
+				}
+			}
+			else
+			{
+				for(uint16_t y = y0; y <= y1; y++)
+				{
+					swxline(x0, y, xlen, value, 1, 0, reverseGradient);
+					startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 1);
+					value = getOffsetColor(data, startColorOffset);
+				}
+			}
+		}
+		else
+		{
+			if(reverseGradient)
+			{
+				for(uint16_t y = y1; y >= y0; y--)
+				{
+					swxline(x1, y, xlen, data, colorCycleLength, startColorOffset, reverseGradient);
+				}
+			}
+			else
+			{
+				for(uint16_t y = y0; y <= y1; y++)
+				{
+					swxline(x0, y, xlen, data, colorCycleLength, startColorOffset, reverseGradient);
+				}
+			}
+		}
+	}
+	else
+	{
+		hd_hw_extent_t ylen = y1 - y0 + 1;
+
+		if(reverseGradient)
+		{
+			swyline(x0, y0+1, ylen-2, data, colorCycleLength, startColorOffset, !reverseGradient);
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, ylen-2);
+			swxline(x0, y1, xlen, data, colorCycleLength, startColorOffset, !reverseGradient);
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, xlen);
+			swyline(x1, y1-1, ylen-2, data, colorCycleLength, startColorOffset, reverseGradient);
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, ylen-2);
+			swxline(x1, y0, xlen, data, colorCycleLength, startColorOffset, reverseGradient);
+		}
+		else
+		{
+			swxline(x0, y0, xlen, data, colorCycleLength, startColorOffset, reverseGradient);
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, xlen);
+			swyline(x1, y0+1, ylen-2, data, colorCycleLength, startColorOffset, reverseGradient);
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, ylen-2);
+			swxline(x1, y1, xlen, data, colorCycleLength, startColorOffset, !reverseGradient);
+			startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, xlen);
+			swyline(x0, y1-1, ylen-2, data, colorCycleLength, startColorOffset, !reverseGradient);
+		}
+	}
+
+}
+
+void	hyperdisplay::swfillFromArray( hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, color_t data, hd_pixels_t numPixels,  bool Vh )
+{
+	// if(data == NULL){ return; }
 
 
+	Serial.println("SW array");
+
+
+	if(data == NULL){ return; }
+	hd_pixels_t startColorOffset = 0;
+
+	if( Vh )
+	{
+		// Vertical lines first format
+		for(hd_hw_extent_t x = x0; x <= x1; x++)
+		{
+			for(hd_hw_extent_t y = y0; y <= y1; y++)
+			{
+				color_t value = getOffsetColor(data, startColorOffset);
+				startColorOffset = getNewColorOffset(numPixels, startColorOffset, 1);
+
+				swpixel(x, y, value, 1, 0 );
+			}
+		}
+	}
+	else
+	{
+		// Horizontal lines first format
+		for(hd_hw_extent_t y = y0; y <= y1; y++)
+		{
+			for(hd_hw_extent_t x = x0; x <= x1; x++)
+			{
+				color_t value = getOffsetColor(data, startColorOffset);
+				startColorOffset = getNewColorOffset(numPixels, startColorOffset, 1);
+
+				swpixel(x, y, value, 1, 0 );
+			}
+		}
+	}
+
+}
 
 
 
@@ -238,119 +492,278 @@ void hyperdisplay::hwfillFromArray(hd_hw_extent_t x0, hd_hw_extent_t y0, hd_hw_e
 /////////////////////////////////////////////
 void hyperdisplay::pixel(hd_extent_t x0, hd_extent_t y0, color_t data, hd_colors_t colorCycleLength, hd_colors_t startColorOffset)
 {
-	hd_hw_extent_t x0hw, y0hw;											
-	hyperdisplay_dim_check_t x0c = enforceLimits(&x0, &x0hw, false);					// Check the x-dimension and convert to hardware coordintaes using the currently assigned window
-	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, &y0hw, true); 					// Check the y-dimension and convert to hardware coordintaes using the currently assigned window
-	if((x0c != hyperdisplay_dim_ok) || (y0c != hyperdisplay_dim_ok)){ return; }		// Do not print a single pixel at the wrong location ever
-	// Check if we are to use the default color
-	if(data == NULL){ hwpixel(x0hw, y0hw, pCurrentWindow->currentSequenceData, pCurrentWindow->currentColorCycleLength, pCurrentWindow->currentColorOffset); }
-	else{ hwpixel(x0hw, y0hw, data, colorCycleLength, startColorOffset); }
+	if(pCurrentWindow->bufferMode){
+		if(wToPix(pCurrentWindow, x0, y0) >= (pCurrentWindow->numPixels)){ return; }	// Since we will never reposition a single pixel we can bail out early if it is beyond the number of pixel types available in the window buffer
+		hyperdisplay_dim_check_t x0c = enforceSWLimits(&x0, false);						// Check the x-dimension and convert to hardware coordintaes using the currently assigned window
+		hyperdisplay_dim_check_t y0c = enforceSWLimits(&y0, true); 						// Check the y-dimension and convert to hardware coordintaes using the currently assigned window
+		if((x0c != hyperdisplay_dim_ok) || (y0c != hyperdisplay_dim_ok)){ return; }		// Do not print a single pixel at the wrong location ever
+		if(data == NULL){ swpixel( x0, y0, pCurrentWindow->currentSequenceData, pCurrentWindow->currentColorCycleLength, pCurrentWindow->currentColorOffset); }
+		else{ swpixel( x0, y0, data, colorCycleLength, startColorOffset); }
+	}else{
+		hd_hw_extent_t x0hw, y0hw;											
+		hyperdisplay_dim_check_t x0c = enforceHWLimits(&x0, &x0hw, false);				// Check the x-dimension and convert to hardware coordintaes using the currently assigned window
+		hyperdisplay_dim_check_t y0c = enforceHWLimits(&y0, &y0hw, true); 				// Check the y-dimension and convert to hardware coordintaes using the currently assigned window
+		if((x0c != hyperdisplay_dim_ok) || (y0c != hyperdisplay_dim_ok)){ return; }		// Do not print a single pixel at the wrong location ever
+		// Check if we are to use the default color
+		if(data == NULL){ hwpixel(x0hw, y0hw, pCurrentWindow->currentSequenceData, pCurrentWindow->currentColorCycleLength, pCurrentWindow->currentColorOffset); }
+		else{ hwpixel(x0hw, y0hw, data, colorCycleLength, startColorOffset); }
+	}
 }
 
 void hyperdisplay::xline(hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_t data, hd_colors_t colorCycleLength, hd_colors_t startColorOffset, bool goLeft)
 {
 	hd_extent_t x1;
-	hd_hw_extent_t x0hw, x1hw, y0hw;
 	if(goLeft){ x1 = x0 - len; }else{ x1 = x0 + len; }									// Calculate where x1 would be in window coordinates
-	hyperdisplay_dim_check_t x0c = enforceLimits(&x0, &x0hw, false);					// 'enforceLimits()' converts windows coordinates to hardware coordinates and restricts the dimension to be in drawable area
-	hyperdisplay_dim_check_t x1c = enforceLimits(&x1, &x1hw, false);					// When the resulting hardware coordinate is in-bounds the function returns "hyperdisplay_dim_ok," otherwise is returns an applicable error
-	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, &y0hw, true); 					// Next use the 'enforceLimits()' results to make sure the desired object is within the active window
-	if(y0c != hyperdisplay_dim_ok){ return; }											// Don't do it if y was wrong
-	if((x0c == hyperdisplay_dim_low) && (x1c == hyperdisplay_dim_low)){ return; }		// Don't do it if x0 and x1 were both low (would cause phantom dot at xMin)
-	if((x0c == hyperdisplay_dim_high) && (x1c == hyperdisplay_dim_high)){ return; }		// Don't do it if x0 and x1 were both high (would cause phantom dot at xMax)
-	// Check if default color
-	hd_hw_extent_t rken = uabslen <hd_hw_extent_t> (x1hw, x0hw);
-	if(data == NULL){ hwxline(x0hw, y0hw, rken, pCurrentWindow->currentSequenceData, pCurrentWindow->currentColorCycleLength, pCurrentWindow->currentColorOffset, goLeft); }
-	else{ hwxline(x0hw, y0hw, rken, data, colorCycleLength, startColorOffset, goLeft); }
+	if(pCurrentWindow->bufferMode){
+		if(pCurrentWindow->data == NULL){ return; }
+		hyperdisplay_dim_check_t x0c = enforceSWLimits(&x0, false);					// 'enforceHWLimits()' converts windows coordinates to hardware coordinates and restricts the dimension to be in drawable area
+		hyperdisplay_dim_check_t x1c = enforceSWLimits(&x1, false);					// When the resulting hardware coordinate is in-bounds the function returns "hyperdisplay_dim_ok," otherwise is returns an applicable error
+		hyperdisplay_dim_check_t y0c = enforceSWLimits(&y0, true); 					// Next use the 'enforceHWLimits()' results to make sure the desired object is within the active window
+		if(y0c != hyperdisplay_dim_ok){ return; }											// Don't do it if y was wrong
+		if((x0c == hyperdisplay_dim_low) && (x1c == hyperdisplay_dim_low)){ return; }		// Don't do it if x0 and x1 were both low (would cause phantom dot at xMin)
+		if((x0c == hyperdisplay_dim_high) && (x1c == hyperdisplay_dim_high)){ return; }		// Don't do it if x0 and x1 were both high (would cause phantom dot at xMax)
+		if(wToPix(pCurrentWindow, x0, y0) >= (pCurrentWindow->numPixels)){ return; }		// Now that start/stop points have had the chance to be adjusted we can make sure they fit in the current window buffer (and hence give them the seal of approval)
+		if(wToPix(pCurrentWindow, x1, y0) >= (pCurrentWindow->numPixels)){ return; }		// Same thing for the other coordinate pair (jic)
+		hd_extent_t rken = uabslen <hd_extent_t> (x1, x0);	
+		if(data == NULL){ swxline( x0, y0, len, pCurrentWindow->currentSequenceData, pCurrentWindow->currentColorCycleLength, pCurrentWindow->currentColorOffset, goLeft); }	// Check if default color
+		else{ swxline( x0, y0, rken, data, colorCycleLength, startColorOffset, goLeft); }
+	}else{
+		hd_hw_extent_t x0hw, x1hw, y0hw;
+		hyperdisplay_dim_check_t x0c = enforceHWLimits(&x0, &x0hw, false);					// 'enforceHWLimits()' converts windows coordinates to hardware coordinates and restricts the dimension to be in drawable area
+		hyperdisplay_dim_check_t x1c = enforceHWLimits(&x1, &x1hw, false);					// When the resulting hardware coordinate is in-bounds the function returns "hyperdisplay_dim_ok," otherwise is returns an applicable error
+		hyperdisplay_dim_check_t y0c = enforceHWLimits(&y0, &y0hw, true); 					// Next use the 'enforceHWLimits()' results to make sure the desired object is within the active window
+		if(y0c != hyperdisplay_dim_ok){ return; }											// Don't do it if y was wrong
+		if((x0c == hyperdisplay_dim_low) && (x1c == hyperdisplay_dim_low)){ return; }		// Don't do it if x0 and x1 were both low (would cause phantom dot at xMin)
+		if((x0c == hyperdisplay_dim_high) && (x1c == hyperdisplay_dim_high)){ return; }		// Don't do it if x0 and x1 were both high (would cause phantom dot at xMax)
+		// Check if default color
+		hd_hw_extent_t rken = uabslen <hd_hw_extent_t> (x1hw, x0hw);
+		if(data == NULL){ hwxline(x0hw, y0hw, rken, pCurrentWindow->currentSequenceData, pCurrentWindow->currentColorCycleLength, pCurrentWindow->currentColorOffset, goLeft); }
+		else{ hwxline(x0hw, y0hw, rken, data, colorCycleLength, startColorOffset, goLeft); }
+	}
 }
 
 void hyperdisplay::yline(hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_t data, hd_colors_t colorCycleLength, hd_colors_t startColorOffset, bool goUp)
 {
 	hd_extent_t y1;
-	hd_hw_extent_t y0hw, y1hw, x0hw;
 	if(goUp){ y1 = y0 - len; }else{ y1 = y0 + len; }							// Calculate where y1 would be in window coordinates
-	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, &y0hw, true);						// 'enforceLimits()' converts windows coordinates to hardware coordinates and restricts the dimension to be in drawable area
-	hyperdisplay_dim_check_t y1c = enforceLimits(&y1, &y1hw, true);						// When the resulting hardware coordinate is in-bounds the function returns "hyperdisplay_dim_ok," otherwise is returns an applicable error
-	hyperdisplay_dim_check_t x0c = enforceLimits(&x0, &x0hw, false); 					// Next use the 'enforceLimits()' results to make sure the desired object is within the active window
-	if(x0c != hyperdisplay_dim_ok){ return; }											// Don't do it if x was wrong
-	if((y0c == hyperdisplay_dim_low) && (y1c == hyperdisplay_dim_low)){ return; }		// Don't do it if y0 and y1 were both low (would cause phantom dot at yMin)
-	if((y0c == hyperdisplay_dim_high) && (y1c == hyperdisplay_dim_high)){ return; }		// Don't do it if y0 and y1 were both high (would cause phantom dot at yMax)
-	hd_hw_extent_t rken = uabslen <hd_hw_extent_t> (y1hw, y0hw);
-	if(data == NULL){ hwyline(x0hw, y0hw, rken, pCurrentWindow->currentSequenceData, pCurrentWindow->currentColorCycleLength, pCurrentWindow->currentColorOffset, goUp); }
-	else{ hwyline(x0hw, y0hw, rken, data, colorCycleLength, startColorOffset, goUp); }
+	if(pCurrentWindow->bufferMode){
+		if(pCurrentWindow->data == NULL){ return; }
+		hyperdisplay_dim_check_t y0c = enforceSWLimits(&y0, true);						// 'enforceHWLimits()' converts windows coordinates to hardware coordinates and restricts the dimension to be in drawable area
+		hyperdisplay_dim_check_t y1c = enforceSWLimits(&y1, true);						// When the resulting hardware coordinate is in-bounds the function returns "hyperdisplay_dim_ok," otherwise is returns an applicable error
+		hyperdisplay_dim_check_t x0c = enforceSWLimits(&x0, false); 					// Next use the 'enforceHWLimits()' results to make sure the desired object is within the active window
+		if(x0c != hyperdisplay_dim_ok){ return; }											// Don't do it if x was wrong
+		if((y0c == hyperdisplay_dim_low) && (y1c == hyperdisplay_dim_low)){ return; }		// Don't do it if y0 and y1 were both low (would cause phantom dot at yMin)
+		if((y0c == hyperdisplay_dim_high) && (y1c == hyperdisplay_dim_high)){ return; }		// Don't do it if y0 and y1 were both high (would cause phantom dot at yMax)
+		if(wToPix(pCurrentWindow, x0, y0) >= (pCurrentWindow->numPixels)){ return; }		// Now that start/stop points have had the chance to be adjusted we can make sure they fit in the current window buffer (and hence give them the seal of approval)
+		if(wToPix(pCurrentWindow, x0, y1) >= (pCurrentWindow->numPixels)){ return; }		// Same thing for the other coordinate pair (jic)
+		hd_extent_t rken = uabslen <hd_extent_t> (y1, y0);
+		if(data == NULL){ swyline( x0, y0, len, pCurrentWindow->currentSequenceData, pCurrentWindow->currentColorCycleLength, pCurrentWindow->currentColorOffset, goUp); }
+		else{ swyline( x0, y0, rken, data, colorCycleLength, startColorOffset, goUp); }
+	}else{
+		hd_hw_extent_t y0hw, y1hw, x0hw;
+		hyperdisplay_dim_check_t y0c = enforceHWLimits(&y0, &y0hw, true);						// 'enforceHWLimits()' converts windows coordinates to hardware coordinates and restricts the dimension to be in drawable area
+		hyperdisplay_dim_check_t y1c = enforceHWLimits(&y1, &y1hw, true);						// When the resulting hardware coordinate is in-bounds the function returns "hyperdisplay_dim_ok," otherwise is returns an applicable error
+		hyperdisplay_dim_check_t x0c = enforceHWLimits(&x0, &x0hw, false); 					// Next use the 'enforceHWLimits()' results to make sure the desired object is within the active window
+		if(x0c != hyperdisplay_dim_ok){ return; }											// Don't do it if x was wrong
+		if((y0c == hyperdisplay_dim_low) && (y1c == hyperdisplay_dim_low)){ return; }		// Don't do it if y0 and y1 were both low (would cause phantom dot at yMin)
+		if((y0c == hyperdisplay_dim_high) && (y1c == hyperdisplay_dim_high)){ return; }		// Don't do it if y0 and y1 were both high (would cause phantom dot at yMax)
+		hd_hw_extent_t rken = uabslen <hd_hw_extent_t> (y1hw, y0hw);
+		if(data == NULL){ hwyline(x0hw, y0hw, rken, pCurrentWindow->currentSequenceData, pCurrentWindow->currentColorCycleLength, pCurrentWindow->currentColorOffset, goUp); }
+		else{ hwyline(x0hw, y0hw, rken, data, colorCycleLength, startColorOffset, goUp); }
+	}
 }
 
 void hyperdisplay::rectangle(hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, bool filled, color_t data, hd_colors_t colorCycleLength, hd_colors_t startColorOffset, bool reverseGradient, bool gradientVertical)
 {
-	hd_hw_extent_t x0hw, x1hw, y0hw, y1hw;
+	Serial.print("Rectangle. Addr = 0x");
+	Serial.println((uint32_t)pCurrentWindow, HEX);
+	Serial.println(pCurrentWindow->bufferMode);
+
 	if(x0 > x1){ swap <hd_extent_t> (&x0, &x1); }
 	if(y0 > y1){ swap <hd_extent_t> (&y0, &y1); }
-	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, &y0hw, true);						// if the dimension was off-window then it will now be on the edge. enforceLimits also applies the transformation into hw coordinates
-	hyperdisplay_dim_check_t y1c = enforceLimits(&y1, &y1hw, true);
-	hyperdisplay_dim_check_t x0c = enforceLimits(&x0, &x0hw, false); 
-	hyperdisplay_dim_check_t x1c = enforceLimits(&x1, &x1hw, false);					// Next use 'enforceLimits()' to make sure the desired object is within the active window, as well as to convert from window coordiantes to hw coordiantes for the upcoming call to hwrectangle()
-	if((y0c == hyperdisplay_dim_low) && (y1c == hyperdisplay_dim_low)){ return; }		// Don't do it if y0 and y1 were both low (would cause phantom line at yMin)
-	if((y0c == hyperdisplay_dim_high) && (y1c == hyperdisplay_dim_high)){ return; }		// Don't do it if y0 and y1 were both high (would cause phantom line at yMax)
-	if((x0c == hyperdisplay_dim_low) && (x1c == hyperdisplay_dim_low)){ return; }		// Don't do it if x0 and x1 were both low (would cause phantom line at xMin)
-	if((x0c == hyperdisplay_dim_high) && (x1c == hyperdisplay_dim_high)){ return; }		// Don't do it if x0 and x1 were both high (would cause phantom line at xMax)
-	if(data == NULL){  hwrectangle(x0hw, y0hw, x1hw, y1hw, filled, pCurrentWindow->currentSequenceData, pCurrentWindow->currentColorCycleLength, pCurrentWindow->currentColorOffset, gradientVertical, reverseGradient); }
-	else{ hwrectangle(x0hw, y0hw, x1hw, y1hw, filled, data, colorCycleLength, startColorOffset, reverseGradient, gradientVertical); }
+	if(pCurrentWindow->bufferMode){
+		if(pCurrentWindow->data == NULL){ return; }
+		hyperdisplay_dim_check_t y0c = enforceSWLimits(&y0, true);							// if the dimension was off-window then it will now be on the edge. enforceHWLimits also applies the transformation into hw coordinates
+		hyperdisplay_dim_check_t y1c = enforceSWLimits(&y1, true);
+		hyperdisplay_dim_check_t x0c = enforceSWLimits(&x0, false); 
+		hyperdisplay_dim_check_t x1c = enforceSWLimits(&x1, false);							// Next use 'enforceHWLimits()' to make sure the desired object is within the active window, as well as to convert from window coordiantes to hw coordiantes for the upcoming call to hwrectangle()
+		if((y0c == hyperdisplay_dim_low) && (y1c == hyperdisplay_dim_low)){ return; }		// Don't do it if y0 and y1 were both low (would cause phantom line at yMin)
+		if((y0c == hyperdisplay_dim_high) && (y1c == hyperdisplay_dim_high)){ return; }		// Don't do it if y0 and y1 were both high (would cause phantom line at yMax)
+		if((x0c == hyperdisplay_dim_low) && (x1c == hyperdisplay_dim_low)){ return; }		// Don't do it if x0 and x1 were both low (would cause phantom line at xMin)
+		if((x0c == hyperdisplay_dim_high) && (x1c == hyperdisplay_dim_high)){ return; }		// Don't do it if x0 and x1 were both high (would cause phantom line at xMax)
+		if(wToPix(pCurrentWindow, x0, y0) >= (pCurrentWindow->numPixels)){ return; }		// Now that start/stop points have had the chance to be adjusted we can make sure they fit in the current window buffer (and hence give them the seal of approval)
+		if(wToPix(pCurrentWindow, x1, y0) >= (pCurrentWindow->numPixels)){ return; }		// Repeat for all coordinate pairs
+		if(wToPix(pCurrentWindow, x0, y1) >= (pCurrentWindow->numPixels)){ return; }		// Repeat for all coordinate pairs
+		if(wToPix(pCurrentWindow, x1, y1) >= (pCurrentWindow->numPixels)){ return; }		// Repeat for all coordinate pairs
+		if(data == NULL){ swrectangle( x0, y0, x1, y1, filled, pCurrentWindow->currentSequenceData, pCurrentWindow->currentColorCycleLength, pCurrentWindow->currentColorOffset, reverseGradient, gradientVertical); }
+		else{ swrectangle( x0, y0, x1, y1, filled, data, colorCycleLength, startColorOffset, reverseGradient, gradientVertical); }
+	}else{
+		Serial.println("here");
+		hd_hw_extent_t x0hw, x1hw, y0hw, y1hw;
+		hyperdisplay_dim_check_t y0c = enforceHWLimits(&y0, &y0hw, true);						// if the dimension was off-window then it will now be on the edge. enforceHWLimits also applies the transformation into hw coordinates
+		hyperdisplay_dim_check_t y1c = enforceHWLimits(&y1, &y1hw, true);
+		hyperdisplay_dim_check_t x0c = enforceHWLimits(&x0, &x0hw, false); 
+		hyperdisplay_dim_check_t x1c = enforceHWLimits(&x1, &x1hw, false);					// Next use 'enforceHWLimits()' to make sure the desired object is within the active window, as well as to convert from window coordiantes to hw coordiantes for the upcoming call to hwrectangle()
+		if((y0c == hyperdisplay_dim_low) && (y1c == hyperdisplay_dim_low)){ return; }		// Don't do it if y0 and y1 were both low (would cause phantom line at yMin)
+		if((y0c == hyperdisplay_dim_high) && (y1c == hyperdisplay_dim_high)){ return; }		// Don't do it if y0 and y1 were both high (would cause phantom line at yMax)
+		if((x0c == hyperdisplay_dim_low) && (x1c == hyperdisplay_dim_low)){ return; }		// Don't do it if x0 and x1 were both low (would cause phantom line at xMin)
+		if((x0c == hyperdisplay_dim_high) && (x1c == hyperdisplay_dim_high)){ return; }		// Don't do it if x0 and x1 were both high (would cause phantom line at xMax)
+		if(data == NULL){  hwrectangle(x0hw, y0hw, x1hw, y1hw, filled, pCurrentWindow->currentSequenceData, pCurrentWindow->currentColorCycleLength, pCurrentWindow->currentColorOffset, gradientVertical, reverseGradient); }
+		else{ hwrectangle(x0hw, y0hw, x1hw, y1hw, filled, data, colorCycleLength, startColorOffset, reverseGradient, gradientVertical); }
+	}
 }
 
 void hyperdisplay::fillFromArray(hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, color_t data, hd_pixels_t numPixels, bool Vh)
 {
 	if(data == NULL){ return; }
-	hd_hw_extent_t x0hw, x1hw, y0hw, y1hw;
 	if(x0 > x1){ swap <hd_extent_t> (&x0, &x1); }
 	if(y0 > y1){ swap <hd_extent_t> (&y0, &y1); }
-	hyperdisplay_dim_check_t y0c = enforceLimits(&y0, &y0hw, true);
-	hyperdisplay_dim_check_t y1c = enforceLimits(&y1, &y1hw, true);
-	hyperdisplay_dim_check_t x0c = enforceLimits(&x0, &x0hw, false); 
-	hyperdisplay_dim_check_t x1c = enforceLimits(&x1, &x1hw, false);	// Next use 'enforceLimits()' to make sure the desired object is within the active window, as well as to convert from window coordiantes to hw coordiantes for the upcoming call to hwfillFromArray()
-	if((y0c == hyperdisplay_dim_low) && (y1c == hyperdisplay_dim_low)){ return; }		// Don't do it if y0 and y1 were both low (would cause phantom line at yMin)
-	if((y0c == hyperdisplay_dim_high) && (y1c == hyperdisplay_dim_high)){ return; }		// Don't do it if y0 and y1 were both high (would cause phantom line at yMax)
-	if((x0c == hyperdisplay_dim_low) && (x1c == hyperdisplay_dim_low)){ return; }		// Don't do it if x0 and x1 were both low (would cause phantom line at xMin)
-	if((x0c == hyperdisplay_dim_high) && (x1c == hyperdisplay_dim_high)){ return; }		// Don't do it if x0 and x1 were both high (would cause phantom line at xMax)
-
-
-	hd_hw_extent_t xlen = uabslen <hd_hw_extent_t> (x1hw, x0hw);
-	hd_hw_extent_t ylen = uabslen <hd_hw_extent_t> (y1hw, y0hw);
-	hd_pixels_t rNP = xlen*ylen;
-
-	if(numPixels < rNP){ rNP = numPixels; }
-
-	hwfillFromArray(x0hw, y0hw, x1hw, y1hw, data, rNP, Vh);
+	if(pCurrentWindow->bufferMode){
+		if(pCurrentWindow->data == NULL){ return; }
+		hyperdisplay_dim_check_t y0c = enforceSWLimits(&y0, true);
+		hyperdisplay_dim_check_t y1c = enforceSWLimits(&y1, true);
+		hyperdisplay_dim_check_t x0c = enforceSWLimits(&x0, false); 
+		hyperdisplay_dim_check_t x1c = enforceSWLimits(&x1, false);	// Next use 'enforceHWLimits()' to make sure the desired object is within the active window, as well as to convert from window coordiantes to hw coordiantes for the upcoming call to hwfillFromArray()
+		if((y0c == hyperdisplay_dim_low) && (y1c == hyperdisplay_dim_low)){ return; }		// Don't do it if y0 and y1 were both low (would cause phantom line at yMin)
+		if((y0c == hyperdisplay_dim_high) && (y1c == hyperdisplay_dim_high)){ return; }		// Don't do it if y0 and y1 were both high (would cause phantom line at yMax)
+		if((x0c == hyperdisplay_dim_low) && (x1c == hyperdisplay_dim_low)){ return; }		// Don't do it if x0 and x1 were both low (would cause phantom line at xMin)
+		if((x0c == hyperdisplay_dim_high) && (x1c == hyperdisplay_dim_high)){ return; }		// Don't do it if x0 and x1 were both high (would cause phantom line at xMax)
+		if(wToPix(pCurrentWindow, x0, y0) >= (pCurrentWindow->numPixels)){ return; }		// Now that start/stop points have had the chance to be adjusted we can make sure they fit in the current window buffer (and hence give them the seal of approval)
+		if(wToPix(pCurrentWindow, x1, y0) >= (pCurrentWindow->numPixels)){ return; }		// Repeat for all coordinate pairs
+		if(wToPix(pCurrentWindow, x0, y1) >= (pCurrentWindow->numPixels)){ return; }		// Repeat for all coordinate pairs
+		if(wToPix(pCurrentWindow, x1, y1) >= (pCurrentWindow->numPixels)){ return; }		// Repeat for all coordinate pairs
+		hd_extent_t xlen = uabslen <hd_extent_t> (x1, x0);
+		hd_extent_t ylen = uabslen <hd_extent_t> (y1, y0);
+		hd_pixels_t rNP = xlen*ylen;		
+		swfillFromArray( x0, y0, x1, y1, data, rNP, Vh );
+	}else{
+		hd_hw_extent_t x0hw, x1hw, y0hw, y1hw;
+		hyperdisplay_dim_check_t y0c = enforceHWLimits(&y0, &y0hw, true);
+		hyperdisplay_dim_check_t y1c = enforceHWLimits(&y1, &y1hw, true);
+		hyperdisplay_dim_check_t x0c = enforceHWLimits(&x0, &x0hw, false); 
+		hyperdisplay_dim_check_t x1c = enforceHWLimits(&x1, &x1hw, false);	// Next use 'enforceHWLimits()' to make sure the desired object is within the active window, as well as to convert from window coordiantes to hw coordiantes for the upcoming call to hwfillFromArray()
+		if((y0c == hyperdisplay_dim_low) && (y1c == hyperdisplay_dim_low)){ return; }		// Don't do it if y0 and y1 were both low (would cause phantom line at yMin)
+		if((y0c == hyperdisplay_dim_high) && (y1c == hyperdisplay_dim_high)){ return; }		// Don't do it if y0 and y1 were both high (would cause phantom line at yMax)
+		if((x0c == hyperdisplay_dim_low) && (x1c == hyperdisplay_dim_low)){ return; }		// Don't do it if x0 and x1 were both low (would cause phantom line at xMin)
+		if((x0c == hyperdisplay_dim_high) && (x1c == hyperdisplay_dim_high)){ return; }		// Don't do it if x0 and x1 were both high (would cause phantom line at xMax)
+		hd_hw_extent_t xlen = uabslen <hd_hw_extent_t> (x1hw, x0hw);
+		hd_hw_extent_t ylen = uabslen <hd_hw_extent_t> (y1hw, y0hw);
+		hd_pixels_t rNP = xlen*ylen;
+		if(numPixels < rNP){ rNP = numPixels; }
+		hwfillFromArray(x0hw, y0hw, x1hw, y1hw, data, rNP, Vh);
+	}
 }
 
 void hyperdisplay::fillWindow(color_t color, hd_colors_t colorCycleLength, hd_colors_t startColorOffset)
 {
 	// The rectangle function uses window coordinates, so to fill a window you go from (0,0) to (xWidth, yWidth)
+	Serial.print("Fill window. Wind addr 0x");
+	Serial.println((uint32_t)pCurrentWindow, HEX);
 	rectangle( 0, 0, pCurrentWindow->xMax - pCurrentWindow->xMin, pCurrentWindow->yMax - pCurrentWindow->yMin, true, color, colorCycleLength, startColorOffset, false, false);
 }
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void hyperdisplay::setCurrentWindowColorSequence(color_t data, uint16_t colorCycleLength, uint16_t startColorOffset)
+void hyperdisplay::setWindowColorSequence(wind_info_t * wind, color_t data, hd_colors_t colorCycleLength, hd_colors_t startColorOffset)
 {
-	pCurrentWindow->currentSequenceData = data;
-	pCurrentWindow->currentColorCycleLength = colorCycleLength;
-	pCurrentWindow->currentColorOffset = startColorOffset;
+	if(wind == NULL){ return; }
+	wind->currentSequenceData = data;
+	wind->currentColorCycleLength = colorCycleLength;
+	wind->currentColorOffset = startColorOffset;
 }
+
+void hyperdisplay::setCurrentWindowColorSequence(color_t data, hd_colors_t colorCycleLength, hd_colors_t startColorOffset)
+{
+	setWindowColorSequence(pCurrentWindow, data, colorCycleLength, startColorOffset);
+}
+
+int        hyperdisplay::setWindowMemory(wind_info_t * wind, color_t data, hd_pixels_t numPixels, uint8_t bpp, bool allowDynamic)
+{
+	if(wind == NULL){ return -1; }
+
+	if(wind->data != NULL){		// If there was a buffer previously associated you need to handle getting rid of it
+		if(wind->dynamic){		// If it was dynamically allocated then free the memory
+			free(wind->data); 	// Maybe should use delete?
+		}
+		wind->numPixels = 0;
+		wind->dynamic = false;
+	}
+
+	if(data == NULL){			// If the user does not supply a pointer then try dynamic allocation
+		if(allowDynamic){
+			color_t ptemp = NULL;
+			ptemp = (color_t)malloc(numPixels*bpp*sizeof(uint8_t));
+			if(ptemp == NULL){
+				return -1; // Could not allocate memory
+			}
+			wind->data = ptemp;
+			wind->dynamic = true;
+		}
+		else{
+			return -1;
+		}
+	}else{
+		wind->data = data;
+		wind->dynamic = false;
+	}
+	wind->numPixels = numPixels;
+	return 0;	// Good!
+}
+
+int        hyperdisplay::setCurrentWindowMemory( color_t data, hd_pixels_t numPixels, uint8_t bpp, bool allowDynamic)
+{
+	setWindowMemory(pCurrentWindow, data, numPixels, bpp, allowDynamic);
+}
+
+
+
+// Buffer and Show
+void        hyperdisplay::buffer( wind_info_t * wind ){ // Puts the current window into buffer mode - drawing commands are performed on the current window's data buffer - if available
+	if(wind != NULL){
+		wind->bufferMode = true;
+	}else{
+		pCurrentWindow->bufferMode = true;
+	}
+}
+
+void        hyperdisplay::direct( wind_info_t * wind ){ // Cancels buffer mode. Drawing commands will go straight to display memory. Buffered data will remain and can still be shown later
+	if(wind != NULL){
+		wind->bufferMode = false;
+	}else{
+		pCurrentWindow->bufferMode = false;
+	}
+}
+
+void        hyperdisplay::show( wind_info_t * wind ){   // Outputs the current window's buffered data to the display
+	if(wind != NULL){
+		wind_info_t* pLastWindow = pCurrentWindow; // Since fillFromArray uses window coordinates we need to change the current window, temporarily
+		pCurrentWindow = wind;
+		bool lastBuffMode = wind->bufferMode;		// Save the state of bufferMode
+		wind->bufferMode = false;					// If we tried to output data while still in buffer mode it would be a mess!
+		fillFromArray(0, 0, wind->xMax - wind->xMin, wind->yMax - wind->yMin, wind->data, wind->numPixels, false);	// Use horizontal mode
+		wind->bufferMode = lastBuffMode;			// Put the window back into whatever buffer mode it had been in before.
+		pCurrentWindow = pLastWindow;				// Switch back to the old window
+	}else{
+		bool lastBuffMode = pCurrentWindow->bufferMode;		// Save the state of bufferMode
+		pCurrentWindow->bufferMode = false;					// If we tried to output data while still in buffer mode it would be a mess!
+		fillFromArray(0, 0, pCurrentWindow->xMax - pCurrentWindow->xMin, pCurrentWindow->yMax - pCurrentWindow->yMin, pCurrentWindow->data, pCurrentWindow->numPixels, false); // Use horizontal mode
+		pCurrentWindow->bufferMode = lastBuffMode;			// Put the window back into whatever buffer mode it had been in before.
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1115,8 +1528,8 @@ uint16_t hyperdisplay::getNewColorOffset(uint16_t colorCycleLength, uint16_t sta
 	}
 }
 
-// enforceLimits takes a window-coordinate and checks if it is within bounds on either the x or y axes, and also converts the value to a hardware coordinate
-hyperdisplay_dim_check_t hyperdisplay::enforceLimits(hd_extent_t * windowvar, hd_hw_extent_t* hardwarevar, bool axisSelect)
+// enforceHWLimits takes a window-coordinate and checks if it is within bounds on either the x or y axes, and also converts the value to a hardware coordinate
+hyperdisplay_dim_check_t hyperdisplay::enforceHWLimits(hd_extent_t * windowvar, hd_hw_extent_t* hardwarevar, bool axisSelect)
 {
 	bool low = false, high = false;
 	if(windowvar == NULL){ return hyperdisplay_dim_no_val; }
@@ -1147,8 +1560,35 @@ hyperdisplay_dim_check_t hyperdisplay::enforceLimits(hd_extent_t * windowvar, hd
 	return hyperdisplay_dim_ok;
 }
 
+hyperdisplay_dim_check_t	hyperdisplay::enforceSWLimits(hd_extent_t* windowvar, bool axisSelect)
+{
+	// This function is a LOT like the one before it except that it does not convert into HW coordinates
+	bool low = false, high = false;
+	if(windowvar == NULL){ return hyperdisplay_dim_no_val; }
+
+	if(axisSelect)
+	{
+		// y axis
+		hd_extent_t height = uabslen <hd_extent_t> (pCurrentWindow->yMax, pCurrentWindow->yMin);			// Get the height of the window in number of pixels
+		if(*windowvar < 0){ low = true; *windowvar = 0; }													// The window var must be positive
+		if( *windowvar >= height ){ high = true; *windowvar = (height-1); }									// The window var must be less than the height (b/c of indexing)
+	}
+	else
+	{
+		// x axis
+		hd_extent_t width = uabslen <hd_extent_t> (pCurrentWindow->xMax, pCurrentWindow->xMin);
+		if(*windowvar < 0){ low = true; *windowvar = 0; }													// The window var must be positive
+		if( *windowvar >= width ){ high = true; *windowvar = (width-1); }									// The window var must be less than the width (b/c of indexing)
+	}
+	if(high){ return hyperdisplay_dim_high; }
+	if(low ){ return hyperdisplay_dim_low;  }
+	return hyperdisplay_dim_ok;
+}
+
 void hyperdisplay::setWindowDefaults(wind_info_t * pwindow)
 {
+	if(pwindow == NULL){ return; }
+
 	// Fills out the default window structure with more or less reasonable defaults
 	pwindow->xMin = 0;
 	pwindow->yMin = 0;
@@ -1168,8 +1608,11 @@ void hyperdisplay::setWindowDefaults(wind_info_t * pwindow)
 	pwindow->lastCharacter.show = false;
 	pwindow->lastCharacter.causesNewline = false;
 	
+	pwindow->bufferMode = false;			// Start out in direct mode
 	pwindow->data = NULL;				// No window data yet
-	setCurrentWindowColorSequence(NULL, 1, 0);	// Setup the default color (Which is NULL, so that you know it is not set yet)
+	pwindow->numPixels = 0;
+	pwindow->dynamic = false;
+	setWindowColorSequence(pwindow, NULL, 0, 0);	// Setup the default color (Which is NULL, so that you know it is not set yet)
 }
 
 

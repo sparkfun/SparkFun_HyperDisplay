@@ -88,8 +88,11 @@ typedef struct window_info{
     color_t         currentSequenceData;		// The data that is used as the default color sequence
     hd_colors_t     currentColorCycleLength;	// The default color sequence number of pixels
     hd_colors_t     currentColorOffset;			// The current offset
-    color_t data;                   			// A pointer to pixel data that is specific to the window. Can be left as NULL
-}wind_info_t;                       		// Window infomation structure for placing text on the display
+    bool            bufferMode;                 // Indicates either buffer or direct mode (direct is default)
+    color_t         data;                       // A pointer to pixel data that is specific to the window. Can be left as NULL
+    hd_pixels_t		numPixels;					// The number of pixel types that data points to
+    bool            dynamic;                    // Indicator if the current buffer memory was dynamically allocated - so that it can be disposed of automatically
+}wind_info_t;                       		// Window infomation structure for placing objects on the display
 
 typedef enum{
     hyperdisplay_dim_ok = 0,
@@ -97,6 +100,9 @@ typedef enum{
     hyperdisplay_dim_high,
     hyperdisplay_dim_no_val
 }hyperdisplay_dim_check_t;
+
+extern wind_info_t hyperdisplayDefaultWindow;       // By declaring these as 'extern' we are making them available to the user
+extern char_info_t hyperdisplayDefaultCharacter;  
 
 class hyperdisplay : public Print{
     private:
@@ -106,15 +112,8 @@ class hyperdisplay : public Print{
 
     	// Utility functions 
     	uint16_t 					getNewColorOffset(uint16_t colorCycleLength, uint16_t startColorOffset, int32_t numWritten);		// Returns a valid offset for a given color sequence and number of pixels drawn
-        hyperdisplay_dim_check_t 	enforceLimits(hd_extent_t * windowvar, hd_hw_extent_t* hardwarevar, bool axisSelect);				// Returns info about if a variable was within current window limits. Also applis the transformation from window to hardware coordinates to that variable
-       
-
-    public: // temporary
-        void 						setCurrentWindowColorSequence(color_t data, uint16_t colorCycleLength = 1, uint16_t startColorOffset = 0);	// Sets up a color sequence for the current window to default to
-
-        // User-defined utilities
-        virtual color_t getOffsetColor(color_t base, uint32_t numPixels) = 0;  									// This pure virtual function is required to get the correct pointer after incrementing by a number of pixels (which could have any amount of data behind them depending on how the color is stored)
-        virtual void 	setWindowDefaults(wind_info_t* pwindow);                         						// Fills out the default window structure and associates it to the current window  // User can override this function        
+        hyperdisplay_dim_check_t 	enforceHWLimits(hd_extent_t * windowvar, hd_hw_extent_t* hardwarevar, bool axisSelect);				// Returns info about if a variable was within current window limits. Also applis the transformation from window to hardware coordinates to that variable       
+        hyperdisplay_dim_check_t	enforceSWLimits(hd_extent_t* windowvar, bool axisSelect);											// Same job as HW limits except does not convert to hardware coordinates
 
 		#if HYPERDISPLAY_DRAWING_LEVEL > 0
     	// Protected drawing functions
@@ -131,25 +130,51 @@ class hyperdisplay : public Print{
         // These functions are in hardware coordinates. The only one you need to implement is hwpixel, but you can implement the others if you have a more efficient way to do it
         // Furthermore when the high-level functions call these functions it will be guaranteed that the pixel locations respect the limits of the display
         // And additionally v0 will be always less than or equal to v1 (variables are provided in ascending order)
-        virtual void 	hwpixel(hd_hw_extent_t x0, hd_hw_extent_t y0, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0) = 0; 											// Made a pure virtual function so that derived classes are forced to implement the pixel function
+        virtual void 	hwpixel(hd_hw_extent_t x0, hd_hw_extent_t y0, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0) = 0;											// Made a pure virtual function so that derived classes are forced to implement the pixel function
         virtual void    hwxline(hd_hw_extent_t x0, hd_hw_extent_t y0, hd_hw_extent_t len, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool goLeft = false);            // Default implementation provided, suggested to overwrite
         virtual void    hwyline(hd_hw_extent_t x0, hd_hw_extent_t y0, hd_hw_extent_t len, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool goUp = false);          // Default implementation provided, suggested to overwrite
         virtual void 	hwrectangle(hd_hw_extent_t x0, hd_hw_extent_t y0, hd_hw_extent_t x1, hd_hw_extent_t y1, bool filled = false, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool reverseGradient = false, bool gradientVertical = false); 
         virtual void 	hwfillFromArray(hd_hw_extent_t x0, hd_hw_extent_t y0, hd_hw_extent_t x1, hd_hw_extent_t y1, color_t data = NULL, hd_pixels_t numPixels = 0,  bool Vh = false );																// Default implementation provided, suggested to overwrite
+
+		// Buffer writing functions - all buffers areread left-to-right and top to bottom. Width and height are specified in the associated window's settings. Coordinates are window coordinates
+		hd_pixels_t		wToPix( wind_info_t* wind, hd_hw_extent_t x0, hd_hw_extent_t y0); // Computes the pixel offset for a window-coordinate pair (multiply by bytes per pixel to get a byte offset)
+		void            swpixel( hd_extent_t x0, hd_extent_t y0, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0);
+		void            swxline( hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool goLeft = false);
+		void            swyline( hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool goUp = false);
+		void            swrectangle( hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, bool filled = false, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool reverseGradient = false, bool gradientVertical = false);
+		void            swfillFromArray( hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, color_t data = NULL, hd_pixels_t numPixels = 0,  bool Vh = false );
+
 
     public:
     // Parameters
         hd_hw_extent_t xExt, yExt;        	// The rectilinear extent of the display in two dimensions (number of pixels)
         wind_info_t * pCurrentWindow;	// A pointer to the active window information structure.
 
+        // User-defined utilities
+        virtual color_t getOffsetColor(color_t base, uint32_t numPixels) = 0;                                   // This pure virtual function is required to get the correct pointer after incrementing by a number of pixels (which could have any amount of data behind them depending on how the color is stored)
+        virtual void    setWindowDefaults(wind_info_t* pwindow);                                                // Fills out the default window structure and associates it to the current window  // User can override this function        
+
+
     // Methods
         // 'primitive' drawing functions - window coordinates
-        void 		pixel(hd_extent_t x0, hd_extent_t y0, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0);
-        void 		xline(hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool goLeft = false); 
-        void 		yline(hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool goUp = false);
-        void 		rectangle(hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, bool filled = false, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool reverseGradient = false, bool gradientVertical = false); 
-        void 		fillFromArray(hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, color_t data = NULL, hd_pixels_t numPixels = 0, bool Vh = false); 
-        void 		fillWindow(color_t color = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0);  
+		void 		pixel(hd_extent_t x0, hd_extent_t y0, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0);
+		void 		xline(hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool goLeft = false); 
+		void 		yline(hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool goUp = false);
+		void 		rectangle(hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, bool filled = false, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool reverseGradient = false, bool gradientVertical = false); 
+		void 		fillFromArray(hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, color_t data = NULL, hd_pixels_t numPixels = 0, bool Vh = false); 
+		void 		fillWindow(color_t color = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0);  
+
+        // Window Functions
+        void		setWindowColorSequence(wind_info_t * wind, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0);	// Sets up a color sequence for the window
+        void 		setCurrentWindowColorSequence(color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0);	// Sets up a color sequence for the current window 
+        int         setWindowMemory(wind_info_t * wind, color_t data = NULL, hd_pixels_t numPixels = 0, uint8_t bpp = 0, bool allowDynamic = false);
+        int         setCurrentWindowMemory( color_t data = NULL, hd_pixels_t numPixels = 0, uint8_t bpp = 0, bool allowDynamic = false);
+
+        	// Buffer and Show
+        void        buffer(wind_info_t * wind = NULL); // Puts the current window into buffer mode - drawing commands are performed on the current window's data buffer - if available
+        void        direct(wind_info_t * wind = NULL); // Cancels buffer mode. Drawing commands will go straight to display memory. Buffered data will remain and can still be shown later
+        void        show(wind_info_t * wind = NULL);   // Outputs the current window's buffered data to the display
+
 
 		#if HYPERDISPLAY_DRAWING_LEVEL > 0
         // Level 1 drawing functions - window coordinates
