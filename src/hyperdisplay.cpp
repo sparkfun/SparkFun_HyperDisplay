@@ -258,8 +258,6 @@ void	hyperdisplay::swpixel( hd_extent_t x0, hd_extent_t y0, color_t data, hd_col
 
 void	hyperdisplay::swxline( hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_t data, hd_colors_t colorCycleLength, hd_colors_t startColorOffset, bool goLeft)
 {
-	Serial.println("SW xline");
-
 	// if(data == NULL){ return; }
 	// if(colorCycleLength == 0){ return; }
 
@@ -311,8 +309,6 @@ void	hyperdisplay::swxline( hd_extent_t x0, hd_extent_t y0, hd_extent_t len, col
 
 void	hyperdisplay::swyline( hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_t data, hd_colors_t colorCycleLength, hd_colors_t startColorOffset, bool goUp)
 {
-	Serial.println("SW yline");
-
 	// if(data == NULL){ return; }
 	// if(colorCycleLength == 0){ return; }
 
@@ -361,9 +357,6 @@ void	hyperdisplay::swrectangle( hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, 
 {
 	// if(data == NULL){ return; }
 	// if(colorCycleLength == 0){ return; }
-
-	Serial.println("SW rectangle");
-
 
 	if(data == NULL){ return; }
 	if(colorCycleLength == 0){ return; }
@@ -443,12 +436,6 @@ void	hyperdisplay::swrectangle( hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, 
 
 void	hyperdisplay::swfillFromArray( hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, color_t data, hd_pixels_t numPixels,  bool Vh )
 {
-	// if(data == NULL){ return; }
-
-
-	Serial.println("SW array");
-
-
 	if(data == NULL){ return; }
 	hd_pixels_t startColorOffset = 0;
 
@@ -575,10 +562,6 @@ void hyperdisplay::yline(hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_
 
 void hyperdisplay::rectangle(hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, bool filled, color_t data, hd_colors_t colorCycleLength, hd_colors_t startColorOffset, bool reverseGradient, bool gradientVertical)
 {
-	Serial.print("Rectangle. Addr = 0x");
-	Serial.println((uint32_t)pCurrentWindow, HEX);
-	Serial.println(pCurrentWindow->bufferMode);
-
 	if(x0 > x1){ swap <hd_extent_t> (&x0, &x1); }
 	if(y0 > y1){ swap <hd_extent_t> (&y0, &y1); }
 	if(pCurrentWindow->bufferMode){
@@ -598,7 +581,6 @@ void hyperdisplay::rectangle(hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_
 		if(data == NULL){ swrectangle( x0, y0, x1, y1, filled, pCurrentWindow->currentSequenceData, pCurrentWindow->currentColorCycleLength, pCurrentWindow->currentColorOffset, reverseGradient, gradientVertical); }
 		else{ swrectangle( x0, y0, x1, y1, filled, data, colorCycleLength, startColorOffset, reverseGradient, gradientVertical); }
 	}else{
-		Serial.println("here");
 		hd_hw_extent_t x0hw, x1hw, y0hw, y1hw;
 		hyperdisplay_dim_check_t y0c = enforceHWLimits(&y0, &y0hw, true);						// if the dimension was off-window then it will now be on the edge. enforceHWLimits also applies the transformation into hw coordinates
 		hyperdisplay_dim_check_t y1c = enforceHWLimits(&y1, &y1hw, true);
@@ -657,8 +639,6 @@ void hyperdisplay::fillFromArray(hd_extent_t x0, hd_extent_t y0, hd_extent_t x1,
 void hyperdisplay::fillWindow(color_t color, hd_colors_t colorCycleLength, hd_colors_t startColorOffset)
 {
 	// The rectangle function uses window coordinates, so to fill a window you go from (0,0) to (xWidth, yWidth)
-	Serial.print("Fill window. Wind addr 0x");
-	Serial.println((uint32_t)pCurrentWindow, HEX);
 	rectangle( 0, 0, pCurrentWindow->xMax - pCurrentWindow->xMin, pCurrentWindow->yMax - pCurrentWindow->yMin, true, color, colorCycleLength, startColorOffset, false, false);
 }
 
