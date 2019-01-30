@@ -13,13 +13,13 @@ HyperDisplay is an abstract top layer library. That means that in order to use i
 Supported Level Two Libraries:
 ------------------------------
 Level two libraries support display driver IC's without customization for any particular display hardware.
-**[ILI9163C Drivers](https://github.com/sparkfun/HyperDisplay_ILI9163C_ArduinoLibrary)**
+* **[ILI9163C Drivers](https://github.com/sparkfun/HyperDisplay_ILI9163C_ArduinoLibrary)**
 
 
 Supported Level Three Libraries
 -------------------------------
 Level three libraries suport particular display models - that is to say a combination of a driver IC with actual display hardware with a certain number of pixels and a fixed communication mode.
-**[KWH018ST01 1.8 inch TFT module, with 4-Wire SPI](https://github.com/sparkfun/HyperDisplay_KWH018ST01_4WSPI_ArduinoLibrary)**
+* **[KWH018ST01 1.8 inch TFT module, with 4-Wire SPI](https://github.com/sparkfun/HyperDisplay_KWH018ST01_4WSPI_ArduinoLibrary)**
 
 
 
