@@ -64,6 +64,11 @@ typedef hd_colors_t hd_pixels_t;
 
 typedef void * color_t; 
 
+const bool hdX = false;
+const bool hdY = true;
+const bool hdW = true;
+const bool hdH = false;
+
 typedef struct character_info{
 	color_t            	data;		           		// The data that is used to fill the character frame
 	hd_font_extent_t*  	xLoc;		       			// x location data relative to the upper left-corner of the character area
