@@ -162,6 +162,11 @@ class hyperdisplay : public Print{
 
 
     // Methods
+        // // Consider adding some functions like first/lastPixel() in x and y directions, and perhaps for window and hw coordinates 
+        // hd_extent_t     fWP( bool axisSelect, bool coordSelect = hdW, wind_info_t* pwindow = NULL, wind_info_t* ptowindow = NULL );     // First window pixel, returns the index of the first pixel of the specified window in either x or y axes and in either window or hardware coordinates. Can request the window coordinates in another window's coordinates
+        // hd_extent_t     lWP( bool axisSelect, bool coordSelect = hdW, wind_info_t* pwindow = NULL, wind_info_t* ptowindow = NULL );
+        // hd_extent_t     fHP( bool axisSelect, bool coordSelect = hdH, wind_info_t* ptowindow = NULL ); 
+        // hd_extent_t     lHP( bool axisSelect, bool coordSelect = hdH, wind_info_t* ptowindow = NULL );        
 
         // Window Functions
         void		setWindowColorSequence(wind_info_t * wind, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0);	// Sets up a color sequence for the window
