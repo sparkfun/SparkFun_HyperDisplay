@@ -870,12 +870,17 @@ void        hyperdisplay::show( wind_info_t * wind ){   // Outputs the current w
 
 
 void hyperdisplay::setTextCursor(int32_t x0, int32_t y0, wind_info_t * window){
-	if(!window) window = pCurrentWindow; //default to current
+	if(!window){ window = pCurrentWindow; }	//default to current
+	if(!window){ return; } 					// Dont operate on null
     window->cursorX = x0;               	// Where the cursor is currently in window-coordinates
     window->cursorY = y0;               	// Where the cursor is currently in window-coordinates
 }
 
-
+void hyperdisplay::resetTextCursor(wind_info_t * window){
+	if(!window){ window = pCurrentWindow; }	//default to current
+	if(!window){ return; } 					// Dont operate on null
+	setTextCursor(window->xReset, window->yReset, window);
+}
 
 
 
