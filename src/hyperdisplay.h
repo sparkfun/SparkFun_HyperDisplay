@@ -78,6 +78,7 @@ typedef struct character_info{
     hd_pixels_t    		numPixels;           		// The number of color_t types that pdata points to
 	bool            	show;				    	// Whether or not to actually show the character
     bool            	causesNewline;				// This indicates if the given chracter is meant to cause a carriage return (newline)
+    bool            	causesNewline;				// This indicates if the given chracter is meant to cause a newline
 }char_info_t;                           	// Character information structure for placing pixels in a window
 
 typedef struct window_info{
