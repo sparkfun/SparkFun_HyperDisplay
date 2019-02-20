@@ -43,7 +43,7 @@ color_t 	bareMinDerived::getOffsetColor(color_t base, uint32_t numPixels)
 	colorCycleLength: this indicates how many pixels worth of valid color data exist contiguously after the memory location pointed to by color.  
 	startColorOffset: this indicates how many pixels to offset by from the color pointer to arrive at the actual color to display
 */
-void 		bareMinDerived::hwpixel(uint16_t x0, uint16_t y0, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset)
+void 		bareMinDerived::hwpixel(hd_hw_extent_t x0, hd_hw_extent_t y0, color_t data, hd_colors_t colorCycleLength, hd_colors_t startColorOffset)
 {
 	// Here you write the code that sets a pixel. It is up to you what to do with that data. Here are two basic options:
 

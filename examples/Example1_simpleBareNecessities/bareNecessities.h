@@ -56,7 +56,7 @@ public:
 		colorCycleLength: this indicates how many pixels worth of valid color data exist contiguously after the memory location pointed to by color.  
 		startColorOffset: this indicates how many pixels to offset by from the color pointer to arrive at the actual color to display
 	*/
-    void 		hwpixel(uint16_t x0, uint16_t y0, color_t data, uint16_t colorCycleLength, uint16_t startColorOffset);
+    void    hwpixel(hd_hw_extent_t x0, hd_hw_extent_t y0, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0);
 
     // Additional hardware drawing functions
     /*
