@@ -61,7 +61,6 @@ typedef uint8_t hd_font_extent_t; 	// Represents the limiting value for width or
 typedef uint32_t hd_colors_t;   	// Represents the limiting value of how many colors can be stored inside a color cycle
 typedef hd_colors_t hd_pixels_t;
 
-
 typedef void * color_t; 
 
 const bool hdX = false;
@@ -77,7 +76,6 @@ typedef struct character_info{
     hd_font_extent_t    yDim;                  		// The maximum value of yLoc - also the number of pixels to move down for characters that cause new lines
     hd_pixels_t    		numPixels;           		// The number of color_t types that pdata points to
 	bool            	show;				    	// Whether or not to actually show the character
-    bool            	causesNewline;				// This indicates if the given chracter is meant to cause a carriage return (newline)
     bool            	causesNewline;				// This indicates if the given chracter is meant to cause a newline
 }char_info_t;                           	// Character information structure for placing pixels in a window
 
