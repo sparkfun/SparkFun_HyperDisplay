@@ -162,13 +162,6 @@ class hyperdisplay : public Print{
 
 
     // Methods
-        // 'primitive' drawing functions - window coordinates
-		void 		pixel(hd_extent_t x0, hd_extent_t y0, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0);
-		void 		xline(hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool goLeft = false); 
-		void 		yline(hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool goUp = false);
-		void 		rectangle(hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, bool filled = false, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool reverseGradient = false, bool gradientVertical = false); 
-		void 		fillFromArray(hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, color_t data = NULL, hd_pixels_t numPixels = 0, bool Vh = false); 
-		void 		fillWindow(color_t color = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0);  
 
         // Window Functions
         void		setWindowColorSequence(wind_info_t * wind, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0);	// Sets up a color sequence for the window
@@ -181,6 +174,13 @@ class hyperdisplay : public Print{
         void        direct(wind_info_t * wind = NULL); // Cancels buffer mode. Drawing commands will go straight to display memory. Buffered data will remain and can still be shown later
         void        show(wind_info_t * wind = NULL);   // Outputs the current window's buffered data to the display
 
+        // 'primitive' drawing functions - window coordinates
+		void 		pixel(hd_extent_t x0, hd_extent_t y0, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0);
+		void 		xline(hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool goLeft = false); 
+		void 		yline(hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool goUp = false);
+		void 		rectangle(hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, bool filled = false, color_t data = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0, bool reverseGradient = false, bool gradientVertical = false); 
+		void 		fillFromArray(hd_extent_t x0, hd_extent_t y0, hd_extent_t x1, hd_extent_t y1, color_t data = NULL, hd_pixels_t numPixels = 0, bool Vh = false); 
+		void 		fillWindow(color_t color = NULL, hd_colors_t colorCycleLength = 1, hd_colors_t startColorOffset = 0);  
 
 		#if HYPERDISPLAY_DRAWING_LEVEL > 0
         // Level 1 drawing functions - window coordinates
