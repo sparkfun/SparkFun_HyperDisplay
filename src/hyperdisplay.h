@@ -36,9 +36,11 @@ Purpose: This library standardizes interfaces to displays of many types.
 
 #if HYPERDISPLAY_USE_PRINT                  // 
     #if HYPERDISPLAY_INCLUDE_DEFAULT_FONT   
-        #include "util/font5x7.h"
-        #define HYPERDISPLAY_DEFAULT_FONT_WIDTH 5
-        #define HYPERDISPLAY_DEFAULT_FONT_HEIGHT 8
+        #if __has_include ( <avr/pgmspace.h> )
+            #include "util/font5x7.h"
+            #define HYPERDISPLAY_DEFAULT_FONT_WIDTH 5
+            #define HYPERDISPLAY_DEFAULT_FONT_HEIGHT 8
+        #endif /* __has_include( "util/font5x7.h" ) */
     #endif
 #endif
 

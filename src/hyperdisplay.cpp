@@ -12,12 +12,12 @@ char_info_t hyperdisplayDefaultCharacter;	// The default character to use
 
 #if HYPERDISPLAY_USE_PRINT
     #if HYPERDISPLAY_INCLUDE_DEFAULT_FONT   
-		hd_font_extent_t hyperdisplayDefaultXloc[HYPERDISPLAY_DEFAULT_FONT_WIDTH*HYPERDISPLAY_DEFAULT_FONT_HEIGHT];
-		hd_font_extent_t hyperdisplayDefaultYloc[HYPERDISPLAY_DEFAULT_FONT_WIDTH*HYPERDISPLAY_DEFAULT_FONT_HEIGHT];
+		#if __has_include ( <avr/pgmspace.h> )
+			hd_font_extent_t hyperdisplayDefaultXloc[HYPERDISPLAY_DEFAULT_FONT_WIDTH*HYPERDISPLAY_DEFAULT_FONT_HEIGHT];
+			hd_font_extent_t hyperdisplayDefaultYloc[HYPERDISPLAY_DEFAULT_FONT_WIDTH*HYPERDISPLAY_DEFAULT_FONT_HEIGHT];
+		#endif /* __has_include( <avr/pgmspace.h> ) */
 	#endif
 #endif
-
-
 
 
 
@@ -763,8 +763,6 @@ void        hyperdisplay::show( wind_info_t * wind ){   // Outputs the current w
 
 
 
-
-
 #if HYPERDISPLAY_USE_PRINT
 	// FYI this virtual function can be overwritten. It is just the most basic default version
 	size_t hyperdisplay::write(uint8_t val)
@@ -802,7 +800,8 @@ void        hyperdisplay::show( wind_info_t * wind ){   // Outputs the current w
 		return numWritten;				
 	}
 
-#if HYPERDISPLAY_INCLUDE_DEFAULT_FONT 			        
+#if HYPERDISPLAY_INCLUDE_DEFAULT_FONT 		
+	#if __has_include ( <avr/pgmspace.h> )     
 		void hyperdisplay::getCharInfo(uint8_t character, char_info_t * character_info) 
 		{
 			// This is the most basic font implementation, it only prints a monochrome character using the first color of the current window's current color sequence
@@ -858,6 +857,14 @@ void        hyperdisplay::show( wind_info_t * wind ){   // Outputs the current w
 				}
 			}
 		}
+	#else
+		#warning "HyperDisplay Default Font Not Supported. Printing will not work without a custom implementation"
+		void hyperdisplay::getCharInfo(uint8_t character, char_info_t * character_info) 
+		{
+			// A blank implementation of getCharInfo for when the target does not support <avr/pgmspace.h>
+			character_info->show = false;
+		}
+	#endif /* __has_include( <avr/pgmspace.h> ) */	   
 #endif /* HYPERDISPLAY_INCLUDE_DEFAULT_FONT */
 
 #else /* HYPERDISPLAY_USE_PRINT */
