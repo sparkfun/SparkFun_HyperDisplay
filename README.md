@@ -14,13 +14,14 @@ Level Two Extensions
 ------------------------------
 Level two libraries support display driver IC's without customization for any particular display hardware.
 * **[ILI9163C Drivers](https://github.com/sparkfun/HyperDisplay_ILI9163C_ArduinoLibrary)**
+* **[SSD1309 Drivers](https://github.com/sparkfun/HyperDisplay_SSD1309_ArduinoLibrary)**
 
 
 Level Three Extensions
 -------------------------------
 Level three libraries suport particular display models - that is to say a combination of a driver IC with actual display hardware with a certain number of pixels and a fixed communication mode.
 * **[KWH018ST01 1.8 inch TFT module, with 4-Wire SPI](https://github.com/sparkfun/HyperDisplay_KWH018ST01_4WSPI_ArduinoLibrary)**
-
+* **[UG2856KLBAG01 Transparent Graphical OLED, I2C and SPI](https://github.com/sparkfun/HyperDisplay_UG2856KLBAG01_ArduinoLibrary)**
 
 
 Repository Contents
