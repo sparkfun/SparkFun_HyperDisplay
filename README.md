@@ -35,6 +35,7 @@ Repository Contents
 Documentation
 --------------
 
+* **[HyperDisplay Tutorial](https://learn.sparkfun.com/tutorials/everything-you-should-know-about-hyperdisplay)** - Usage information
 * **[Installing an Arduino Library Guide](https://learn.sparkfun.com/tutorials/installing-an-arduino-library)** - Basic information on how to install an Arduino library.
 
 Products that use this Library 
