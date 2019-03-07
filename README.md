@@ -45,6 +45,7 @@ Products that use this Library
 Version History
 ---------------
 
+* [V 1.0.0](https://github.com/sparkfun/SparkFun_HyperDisplay/releases/tag/v1.0.0) -- Initial release
 
 License Information
 -------------------
