@@ -660,15 +660,15 @@ void hyperdisplay::setCurrentWindowColorSequence(color_t data, hd_colors_t color
 int        hyperdisplay::setWindowMemory(wind_info_t * wind, color_t data, hd_pixels_t numPixels, uint8_t bpp, bool allowDynamic)
 {
 	if(wind == NULL){ return -1; }
-
-	if(wind->data != NULL){		// If there was a buffer previously associated you need to handle getting rid of it
-		if(wind->dynamic){		// If it was dynamically allocated then free the memory
-			free(wind->data); 	// Maybe should use delete?
+	if (wind->dynamic) {
+		if(wind->data != NULL){		// If there was a buffer previously associated you need to handle getting rid of it
+			if(wind->dynamic){		// If it was dynamically allocated then free the memory
+				free(wind->data); 	// Maybe should use delete?
+			}
+			wind->numPixels = 0;
+			wind->dynamic = false;
 		}
-		wind->numPixels = 0;
-		wind->dynamic = false;
 	}
-
 	if(data == NULL){			// If the user does not supply a pointer then try dynamic allocation
 		if(allowDynamic){
 			color_t ptemp = NULL;
