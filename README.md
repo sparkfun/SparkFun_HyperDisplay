@@ -40,11 +40,12 @@ Documentation
 
 Products that use this Library 
 ---------------------------------
-
+* [Transparent Graphical OLED [LCD-15173]](https://www.sparkfun.com/products/15173)
 
 Version History
 ---------------
 
+* [V 1.0.0](https://github.com/sparkfun/SparkFun_HyperDisplay/releases/tag/v1.0.0) -- Initial release
 
 License Information
 -------------------
