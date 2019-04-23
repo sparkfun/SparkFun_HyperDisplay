@@ -41,6 +41,7 @@ Documentation
 Products that use this Library 
 ---------------------------------
 * [Transparent Graphical OLED [LCD-15173]](https://www.sparkfun.com/products/15173)
+* [SparkFun 1.8 inch TFT Breakout 128x160](https://www.sparkfun.com/products/15143)
 
 Version History
 ---------------
