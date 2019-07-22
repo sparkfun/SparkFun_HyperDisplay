@@ -46,7 +46,14 @@ INCLUDE_DEFAULT_FONT
 0 - don't include the default 5x7 program memory font (to save on program space)
 1 - do include the default 5x7 program memory font (to NOT save on program space)
 */
-#define HYPERDISPLAY_INCLUDE_DEFAULT_FONT 1
+#define HYPERDISPLAY_INCLUDE_SMALL_FONT 0
+
+/*
+INCLUDE_ALTERNATIVE_FONT
+0 - don't include the alternative 8x16 program memory font (to save on program space)
+1 - do include the default 8x16 program memory font (to NOT save on program space)
+*/
+#define HYPERDISPLAY_INCLUDE_LARGE_FONT 1
 
 /*
 USE_MATH: 
