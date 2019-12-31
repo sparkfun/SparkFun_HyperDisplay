@@ -692,7 +692,7 @@ int        hyperdisplay::setWindowMemory(wind_info_t * wind, color_t data, hd_pi
 
 int        hyperdisplay::setCurrentWindowMemory( color_t data, hd_pixels_t numPixels, uint8_t bpp, bool allowDynamic)
 {
-	setWindowMemory(pCurrentWindow, data, numPixels, bpp, allowDynamic);
+	return setWindowMemory(pCurrentWindow, data, numPixels, bpp, allowDynamic);
 }
 
 
