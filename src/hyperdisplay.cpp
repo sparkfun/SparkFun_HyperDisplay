@@ -238,23 +238,7 @@ hd_pixels_t		hyperdisplay::wToPix( wind_info_t* wind, hd_hw_extent_t x0, hd_hw_e
 	return pixOffst;
 }
 
-void	hyperdisplay::swpixel( hd_extent_t x0, hd_extent_t y0, color_t data, hd_colors_t colorCycleLength, hd_colors_t startColorOffset)
-{
-	if(data == NULL){ return; }
-	if(colorCycleLength == 0){ return; }
-
-	startColorOffset = getNewColorOffset(colorCycleLength, startColorOffset, 0);	// This line is needed to condition the user's input start color offset because it could be greater than the cycle length
-	color_t value = getOffsetColor(data, startColorOffset);
-
-	hd_hw_extent_t x0w = (hd_hw_extent_t)x0;	// Cast to hw extent type to be sure of integer values
-	hd_hw_extent_t y0w = (hd_hw_extent_t)y0;
-
-	hd_pixels_t pixOffst = wToPix(pCurrentWindow, x0, y0);			// It was already ensured that this will be in range 
-	color_t dest = getOffsetColor(pCurrentWindow->data, pixOffst);	// Rely on the user's definition of a pixel's width in memory
-	uint32_t len = (uint32_t)getOffsetColor(0x00, 1);				// Getting the offset from zero for one pixel tells us how many bytes to copy
-
-	memcpy((void*)dest, (void*)value, (size_t)len);		// Copy data into the window's buffer
-}
+// void	swpixel( hd_extent_t x0, hd_extent_t y0, color_t data, hd_colors_t colorCycleLength, hd_colors_t startColorOffset) = 0;
 
 void	hyperdisplay::swxline( hd_extent_t x0, hd_extent_t y0, hd_extent_t len, color_t data, hd_colors_t colorCycleLength, hd_colors_t startColorOffset, bool goLeft)
 {
