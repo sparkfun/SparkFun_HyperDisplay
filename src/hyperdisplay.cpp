@@ -768,7 +768,6 @@ void        hyperdisplay::show( wind_info_t * wind ){   // Outputs the current w
 		// Now write the character
 		if(hyperdisplayDefaultCharacter.show)
 		{
-			//fillFromArray(pCurrentWindow->cursorX, pCurrentWindow->cursorY, pCurrentWindow->cursorX+hyperdisplayDefaultCharacter.xDim, pCurrentWindow->cursorY+hyperdisplayDefaultCharacter.yDim, hyperdisplayDefaultCharacter.numPixels, hyperdisplayDefaultCharacter.data);
 			for(uint32_t indi = 0; indi < hyperdisplayDefaultCharacter.numPixels; indi++)
 			{
 				pixel(((pCurrentWindow->cursorX)+*(hyperdisplayDefaultCharacter.xLoc + indi)), ((pCurrentWindow->cursorY)+*(hyperdisplayDefaultCharacter.yLoc + indi)), NULL, 1, 0);

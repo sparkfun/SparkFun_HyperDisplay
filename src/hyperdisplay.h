@@ -71,7 +71,7 @@ const bool hdW = true;
 const bool hdH = false;
 
 typedef struct character_info{
-	color_t            	data;		           		// The data that is used to fill the character frame
+	color_t            	data;		           		// deprecated - fonts now use the first color in the window's color sequence
 	hd_font_extent_t*  	xLoc;		       			// x location data relative to the upper left-corner of the character area
 	hd_font_extent_t*	yLoc;		       			// y location data relative to the upper left-corner of the character area
     hd_font_extent_t    xDim;                  		// The maximum value of xLoc
